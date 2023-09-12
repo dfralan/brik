@@ -16,10 +16,8 @@ To use Brik in your web project, follow these simple steps:
 Add the following code to the `<head>` section of your HTML file to include the Brik stylesheet:
 
 ```html
-<link rel="stylesheet" href="https://your-cdn-url/brik.css">
+<script src="https://cdn.jsdelivr.net/gh/dfralan/brik@v1/brik.js"></script>
 ```
-
-Replace `"https://cdn.jsdelivr.net/gh/dfralan/brik@v1/brik.js"` with the actual URL where you host the Brik stylesheet.
 
 ### Step 2: Create Brik Elements
 
