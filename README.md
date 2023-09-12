@@ -68,7 +68,9 @@ Brik is open-source software released under the [MIT License](https://opensource
 
 ## Brik in action
 
-You can see Brik in action here [demo](https://dfralan.github.io/brik/). You are free to use and modify it for your projects.
+You can see Brik in action here. You are free to use and modify it for your projects.
+[landing-demo](https://dfralan.github.io/brik/index.html)
+[menu-demo](https://dfralan.github.io/brik/demo.html)
 
 ## Acknowledgments
 
