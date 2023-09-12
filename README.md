@@ -1,9 +1,7 @@
 <img src="brik.svg" alt="Description of the image" width="100" height="100">
 
 # Brik
-Build web like bricks
-
-## Brik Library is a Lightweight Bootstrap Alternative (10% Weight)
+## Build web like bricks
 
 ## Overview
 
