@@ -747,6 +747,11 @@ html {
     width: 100%;
 }
 
+.height-100 {
+    height: 100vh;
+
+}
+
 .width-66 {
     width: calc(100% / 1.5);
 }

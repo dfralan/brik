@@ -18,12 +18,13 @@
 <body class="height-100 display-flex flex-col">
 
     <!-- Hero -->
-    <div style="height: 100vh !important;" id="accessPassModal" class="modal z-i full-center blur-behind smooth-300 text-center bg-body">
+    <div style="height: 100vh !important;" id="accessPassModal" class="width-100 fixed to-top to-left z-i full-center blur-behind smooth-300 text-center bg-body height-100">
 
-        <div class="modal-bg bg-body"></div>
-        <div class="responsive-width-33 z-2 x-padded display-flex rounded flex-col l-gap">
-            <h1 id="workspaceModalIndicator" class="font-400 color-primary">
-                <svg width="70" height="70" viewBox="0 0 27 27" fill="none" xmlns="http://www.w3.org/2000/svg">
+        <div class="absolute bg-body width-100 z-1 height-100 blur-behind"></div>
+        
+        <div class="responsive-width-33 z-2 x-padded display-flex rounded flex-col m-gap">
+            <div class="display-flex flex-col full-center width-100 s-gap">
+                <svg width="40" height="40" viewBox="0 0 27 27" fill="none" xmlns="http://www.w3.org/2000/svg">
                     <g clip-path="url(#clip0_259_6)">
                     <path d="M15.0799 13.51C14.4099 12.73 12.1899 6.72005 6.6999 7.68005C0.509896 8.77005 4.3799 -0.639953 7.0699 0.0300466C8.5299 0.390047 8.8899 3.31005 11.0799 1.12005C12.7299 -0.529953 15.4499 0.390047 15.8099 2.94005C16.1699 5.49005 22.3699 2.21005 23.4599 8.40005C24.5499 14.59 19.8199 18.97 15.0799 13.51Z" fill="#FF5745"/>
                     <path d="M14.3502 21.89C15.0802 22.25 15.8102 25.17 14.3502 26.62C12.7002 28.27 9.98018 24.07 8.16018 23.34C6.94018 22.85 8.53018 18.97 14.3502 21.89Z" fill="#FFA31D"/>
@@ -34,22 +35,34 @@
                     </clipPath>
                     </defs>
                 </svg>
-            </h1>
-            <div class="display-flex flex-col to-start width-100 s-gap">
-                <label class="color-secondary" for="email">Email</label>
-                <input class="width-100 border-solid border-secondary color-primary bg-tertiary rounded-s s-padded" type="text" name="" id="email" placeholder="E-mail">
+                <h1 id="workspaceModalIndicator" class="font-600 color-primary">Welcome to Brik</h1>
+                <h4 class="color-secondary font-400">Sign in to your account</h4>
             </div>
             <div class="display-flex flex-col to-start width-100 s-gap">
-                <label class="color-secondary" for="password">Password</label>
-                <input class="width-100 border-solid border-secondary color-primary bg-tertiary rounded-s s-padded" type="password" name="" id="password" placeholder="Password">
+                <label class="color-secondary font-300" for="email">Username</label>
+                <input class="width-100 border-solid border-secondary color-primary bg-tertiary rounded-s s-padded" type="text" name="" id="email" placeholder="Type your username">
             </div>
+            <div class="display-flex flex-col to-start width-100 s-gap">
+                <label class="color-secondary font-300" for="password">Password</label>
+                <div class="fill-secondary display-flex flex-row to-center width-100 border-solid border-secondary color-primary bg-tertiary rounded-s s-padded">
+                    <input class="width-100 bg-none border-none" type="password" name="" id="password" placeholder="6+ strong characters">
+                    <svg xmlns="http://www.w3.org/2000/svg" height="18" viewBox="0 -960 960 960" width="18"><path d="m626.576-441.078-42.191-42.191q10.23-54.309-28.327-92.654-38.558-38.346-92.789-28.462l-42.191-42.191q13.923-6.019 28.653-8.836 14.731-2.818 30.269-2.818 66.057 0 112.143 46.087Q638.23-566.057 638.23-500q0 15.538-2.625 30.269-2.625 14.73-9.029 28.653Zm123.5 121.539L709.654-358q37.969-29 68.096-64.5 30.127-35.5 50.212-77.5-49.137-100.265-142.895-158.921Q591.309-717.577 480-717.577q-28.934 0-57.121 4.25t-55.994 12.558l-43.884-43.884q37.779-15.077 77.068-21.98 39.289-6.904 79.931-6.904 125.692 0 231.595 65.788 105.904 65.788 162.865 177.672 3.808 7.116 5.462 14.548 1.654 7.433 1.654 15.529t-1.5 15.529q-1.5 7.432-5 14.855-21.778 44.868-53.678 82.53-31.899 37.662-71.322 67.547ZM480-226.463q-123.959 0-226.729-66.288-102.77-66.288-164.111-174.363-4.928-7.232-6.832-15.688-1.904-8.455-1.904-17.193 0-8.888 1.89-17.113 1.888-8.225 6.803-15.969 22.615-40.461 50.692-77.25 28.077-36.788 64.27-65.711l-90.308-92.539q-7.808-8.195-7.692-19.463.115-11.267 8.307-19.459 8.192-8.193 19.461-8.193 11.269 0 19.501 8.229l653.036 652.847q8.115 8.308 8.211 19.865.097 11.557-8.711 19.865-8.5 8.192-19.615 8.038-11.115-.154-19.335-8.388L628.308-252.809q-35.385 13.885-72.629 20.115-37.245 6.231-75.679 6.231ZM243.809-637.116q-35.77 27.154-64.309 61.612-28.538 34.459-47.462 75.504 49.13 100.265 142.874 158.921 93.744 58.656 205.036 58.656 27.029 0 52.849-3.462 25.82-3.461 50.743-11.5l-52.261-53.463q-12.046 5.308-24.708 7.193-12.662 1.885-26.571 1.885-66.057 0-112.143-46.087Q321.77-433.943 321.77-500q0-13.258 2.077-25.827 2.077-12.57 7.001-24.674l-87.039-86.615Zm294.46 107.731Zm-124.498 62.038Z"/></svg>
+                    <svg class="display-none" xmlns="http://www.w3.org/2000/svg" height="24" viewBox="0 -960 960 960" width="24"><path d="M480.091-341.77q65.966 0 112.052-46.177 46.087-46.177 46.087-112.144 0-65.966-46.177-112.052-46.177-46.087-112.144-46.087-65.966 0-112.052 46.177-46.087 46.177-46.087 112.144 0 65.966 46.177 112.052 46.177 46.087 112.144 46.087Zm.004-51.845q-44.287 0-75.383-31.002-31.097-31.001-31.097-75.288 0-44.287 31.002-75.383 31.001-31.097 75.288-31.097 44.287 0 75.383 31.001 31.097 31.002 31.097 75.289 0 44.287-31.001 75.383-31.002 31.097-75.289 31.097Zm-.052 167.152q-123.619 0-226.177-66.173-102.557-66.172-164.019-173.672-5-8.206-7.057-16.566-2.058-8.359-2.058-17.159 0-8.799 2.058-17.126 2.057-8.327 7.057-16.533 61.462-107.5 163.976-173.672 102.514-66.173 226.134-66.173 123.619 0 226.177 66.173 102.557 66.172 164.018 173.631 5 8.156 7.154 16.56 2.154 8.404 2.154 17.25t-2.154 17.173q-2.154 8.327-7.154 16.483-61.461 107.459-163.975 173.631-102.514 66.173-226.134 66.173ZM480-500Zm-.002 217.577q111.811 0 205.319-58.656Q778.825-399.735 827.962-500q-49.137-100.265-142.643-158.921-93.505-58.656-205.317-58.656-111.811 0-205.319 58.656Q181.175-600.265 132.038-500q49.137 100.265 142.643 158.921 93.505 58.656 205.317 58.656Z"/></svg>
+                </div>
+            </div>
+            <a style="font-size: small;" class="subheadline color-primary font-m" href="">Forgot your password?</a>
             <button class="width-100 bg-primary border-none color-body font-500 font-l rounded-max s-padded">
                 Login
             </button>
-            <a class="subheadline color-primary font-m" href="">Forgot your password?</a>
+            <p class="subheadline color-secondary font-m">Don't have an account? <a class="font-500 color-primary decoration-none" href="">Sign up</a></p>
         
         </div>
     </div>
+
+
+    <p id="theme-btn" class="fixed to-right to-top padded z-i" aria-label="dark">
+        <span><svg id="sun" class="fill-primary" xmlns="http://www.w3.org/2000/svg" height="20" viewBox="0 -960 960 960" width="20" style="display: none;"><path d="M480-120q-150 0-255-105T120-480q0-135 79.5-229T408-830q41-8 56 14t-1 60q-9 23-14 47t-5 49q0 90 63 153t153 63q25 0 48.5-4.5T754-461q43-16 64 1.5t11 59.5q-27 121-121 200.5T480-120Zm0-60q109 0 190-67.5T771-406q-25 11-53.667 16.5Q688.667-384 660-384q-114.689 0-195.345-80.655Q384-545.311 384-660q0-24 5-51.5t18-62.5q-98 27-162.5 109.5T180-480q0 125 87.5 212.5T480-180Zm-4-297Z"></path></svg><svg id="moon" class="fill-secondary hover-fill-tint" xmlns="http://www.w3.org/2000/svg" height="20" viewBox="0 -960 960 960" width="20" style="display: block;"><path d="M479.765-340Q538-340 579-380.765q41-40.764 41-99Q620-538 579.235-579q-40.764-41-99-41Q422-620 381-579.235q-41 40.764-41 99Q340-422 380.765-381q40.764 41 99 41Zm.235 60q-83 0-141.5-58.5T280-480q0-83 58.5-141.5T480-680q83 0 141.5 58.5T680-480q0 83-58.5 141.5T480-280ZM70-450q-12.75 0-21.375-8.675Q40-467.351 40-480.175 40-493 48.625-501.5T70-510h100q12.75 0 21.375 8.675 8.625 8.676 8.625 21.5 0 12.825-8.625 21.325T170-450H70Zm720 0q-12.75 0-21.375-8.675-8.625-8.676-8.625-21.5 0-12.825 8.625-21.325T790-510h100q12.75 0 21.375 8.675 8.625 8.676 8.625 21.5 0 12.825-8.625 21.325T890-450H790ZM479.825-760Q467-760 458.5-768.625T450-790v-100q0-12.75 8.675-21.375 8.676-8.625 21.5-8.625 12.825 0 21.325 8.625T510-890v100q0 12.75-8.675 21.375-8.676 8.625-21.5 8.625Zm0 720Q467-40 458.5-48.625T450-70v-100q0-12.75 8.675-21.375 8.676-8.625 21.5-8.625 12.825 0 21.325 8.625T510-170v100q0 12.75-8.675 21.375Q492.649-40 479.825-40ZM240-678l-57-56q-9-9-8.629-21.603.37-12.604 8.526-21.5 8.896-8.897 21.5-8.897Q217-786 226-777l56 57q8 9 8 21t-8 20.5q-8 8.5-20.5 8.5t-21.5-8Zm494 495-56-57q-8-9-8-21.375T678.5-282q8.5-9 20.5-9t21 9l57 56q9 9 8.629 21.603-.37 12.604-8.526 21.5-8.896 8.897-21.5 8.897Q743-174 734-183Zm-56-495q-9-9-9-21t9-21l56-57q9-9 21.603-8.629 12.604.37 21.5 8.526 8.897 8.896 8.897 21.5Q786-743 777-734l-57 56q-8 8-20.364 8-12.363 0-21.636-8ZM182.897-182.897q-8.897-8.896-8.897-21.5Q174-217 183-226l57-56q8.8-9 20.9-9 12.1 0 20.709 9Q291-273 291-261t-9 21l-56 57q-9 9-21.603 8.629-12.604-.37-21.5-8.526ZM480-480Z"></path></svg></span>
+    </p>
 
     <!-- Scripts -->
     <script src="brik.js"></script>
