@@ -19,7 +19,7 @@ To use Brik in your web project, follow these simple steps:
 Add the following code to the end of the `<body>` section of your HTML file to include the Brik CDN:
 
 ```html
-<script src="https://cdn.jsdelivr.net/gh/dfralan/brik@v1/brik.js"></script>
+<script src="https://cdn.jsdelivr.net/gh/dfralan/brik@main/brik.js"></script>
 ```
 
 ### Step 2: Create Brik Elements
