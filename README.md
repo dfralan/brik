@@ -7,7 +7,8 @@
 
 Brik is a lightweight JS library that provides a minimalistic alternative to Bootstrap. It is designed to be fast, efficient, and easy to use, with a total weight of just 10% compared to Bootstrap. Brik focuses on providing essential styling and utility classes while keeping the codebase small and efficient.
 
-<img src="login-dark-mobile" alt="Login Page" width="100">
+<img src="login-dark-mobile.png" alt="Login Page" width="100">
+<img src="login-light-mobile.png" alt="Login Page" width="100">
 
 ## Getting Started
 
