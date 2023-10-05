@@ -708,16 +708,22 @@ html {
     visibility: visible;
 }
 
+.on-desktop-hide {
+    visibility: hidden;
+}
+
 .on-mobile-show {
     visibility: collapse;
     display: none;
 }
 
 .child {
+    display: none;
     opacity: 0;
 }
 
 .show-my-child:hover .child {
+    display: block;
     opacity: 1;
 }
 
@@ -834,6 +840,10 @@ html {
     .on-mobile-hide {
         visibility: collapse;
         display: none;
+    }
+
+    .on-desktop-hide {
+        visibility: visible;
     }
 
     .on-mobile-show {
@@ -1199,4 +1209,3 @@ function extractAllContentBetweenBrkTags(inputString) {
     })
 
 })();
-
