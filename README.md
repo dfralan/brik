@@ -1,11 +1,12 @@
 <img src="brik.svg" alt="Description of the image" width="100" height="100">
 
 # Brik
+
 ## Build web like bricks
 
 ## Overview
 
-Brik is a lightweight JS library that provides a minimalistic alternative to Bootstrap. It is designed to be fast, efficient, and easy to use, with a total weight of just 10% compared to Bootstrap. Brik focuses on providing essential styling and utility classes while keeping the codebase small and efficient.
+Brik is a lightweight JS library that provides a minimalistic way of create components. It is designed to be fast, efficient, and easy to use, with a total weight of just 10% compared to Bootstrap. Brik focuses on providing essential styling and utility classes while keeping the codebase small and efficient.
 
 <img src="login-dark-mobile.png" alt="Login Page" height="100%">
 <img src="login-light-mobile.png" alt="Login Page" height="100%">
