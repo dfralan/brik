@@ -8,8 +8,8 @@
 
 Brik is a lightweight JS library that provides a minimalistic way of create components. It is designed to be fast, efficient, and easy to use, with a total weight of just 10% compared to Bootstrap. Brik focuses on providing essential styling and utility classes while keeping the codebase small and efficient.
 
-<img src="/src/assets/loginTemplateDark.png" alt="Login Page" height="100%">
-<img src="/src/assets/loginTemplateLight.png" alt="Login Page" height="100%">
+<img src="./src/assets/loginTemplateDark.png" alt="Login Page" height="100%">
+<img src="./src/assets/loginTemplateLight.png" alt="Login Page" height="100%">
 
 ## Getting Started
 
