@@ -37,7 +37,7 @@ You can also create HTML components directly on a js file and add Javascript fun
 ```html
 <!-- Register section -->
 <brik register></brik>
-<script src="src/js/components/registerView.js"></script>
+<script src="./src/js/components/registerView.js"></script>
 ```
 
 ```javascript
