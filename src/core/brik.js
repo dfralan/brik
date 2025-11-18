@@ -1,4 +1,4 @@
-import * as components from "./src/core/components.js";
+import * as components from "./components.js";
 
 // Assign components to window object
 Object.entries(components).forEach(([key, value]) => {
