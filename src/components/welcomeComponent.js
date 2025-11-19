@@ -1,5 +1,5 @@
-import { brikLogo } from "./src/components/logoComponent.js";
-import { observeChanges } from "./src/core/brik.js";
+import { brikLogo } from "/src/components/logoComponent.js";
+import { observeChanges } from "/src/core/brik.js";
 
 // We gonna change this content later fetching content from welcomeContent.json file
 var welcomeContent = {
@@ -39,7 +39,7 @@ window.addEventListener('welcome', function (event) {
     observeChanges(identifier, welcomeContent, 'update');
 
     // Here we make a fetch with the content that we want to put in our component
-    fetch('./src/content/welcomeContent.json')
+    fetch('/src/content/welcomeContent.json')
         .then((response) => response.json())
         .then((json) => {
             welcomeContent.title = json.title

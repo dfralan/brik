@@ -1,5 +1,5 @@
 
-import { brikLogo } from "./src/components/logoComponent.js";
+import { brikLogo } from "/src/components/logoComponent.js";
 
 var loginFormContent = {
     formHeader: {
