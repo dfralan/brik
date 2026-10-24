@@ -1,85 +1,106 @@
-<img src="brik.svg" alt="Description of the image" width="100" height="100">
+<img src="brik.svg" alt="Brik" width="48" height="48">
 
 # Brik
 
-## Build web like bricks
+## Just enough to exist.
+
+A tiny reactive runtime for interfaces that build themselves.
+
+One JavaScript file. One CDN. One root component. No npm, no compiler, no virtual DOM.
+
+The runtime is 1863 B gzip.
 
 ## Overview
 
-Brik is a lightweight JS library that provides a minimalistic way of create components. It is designed to be fast, efficient, and easy to use, with a total weight of just 10% compared to Bootstrap. Brik focuses on providing essential styling and utility classes while keeping the codebase small and efficient.
+Brik discovers `<brik>` elements and mounts registered components. Those components can create more `<brik>` elements, recursively.
 
-<img src="/src/assets/loginTemplateDark.png" alt="Login Page" height="100%">
-<img src="/src/assets/loginTemplateLight.png" alt="Login Page" height="100%">
+It is a client-side framework. Agents, CLIs, and connectors can drive it through the same public API. Brik itself only renders and reacts.
 
 ## Getting Started
 
-To use Brik in your web project, follow these simple steps:
-
-### Step 1: Include Brik Stylesheet
-
-Add the following code to the end of the `<body>` section of your HTML file to include the Brik CDN:
+### 1. Include Brik
 
 ```html
-<script src="https://cdn.jsdelivr.net/gh/dfralan/brik@main/brik.js"></script>
+<script defer src="https://brikjs.pages.dev/v1/brik.min.js"></script>
 ```
 
-### Step 2: Create Brik Elements
+Or copy `brik.min.js` next to your page.
 
-Brik provides a set of utility classes that you can apply to HTML elements to achieve the desired styling. Here's an example of how to create a button using Brik classes:
+### 2. Create a root element
 
 ```html
-<button class="btn btn-primary">Primary Button</button>
-<button class="btn btn-secondary">Secondary Button</button>
+<body>
+  <brik app></brik>
+  <script defer src="./brik.min.js"></script>
+  <script defer src="./app.js"></script>
+</body>
 ```
 
-You can also create HTML components directly on a js file and add Javascript functionalities
+### 3. Define components
 
-```html
-<!-- Register section -->
-<brik register></brik>
-<script src="/src/js/components/registerView.js"></script>
+```js
+Brik.component("app", function () {
+  return "<main><brik header></brik><brik counter></brik></main>";
+});
+
+Brik.component("header", function () {
+  return Brik.h("h1", null, "Brik");
+});
+
+Brik.component("counter", function () {
+  var n = Brik.state(0);
+  return Brik.h("button", {
+    onclick: function () { n.value++; }
+  }, function () { return n.value; });
+});
 ```
 
-```javascript
-var register =
-`
-<section id="registerSection" class="display-none">
-    <div style='padding-top: 50%' class="full-center flex-col m-gap height-100">
-    <button id="showWelcomeSectionButton2" class="btn color-primary underlined">Go back</button>
-        <h3>
-            <span class="color-primary">We allow only already registered users</span>
-            <span class="color-tint">:(</span>
-        </h3>
-    </div>
-</section>
-`
+Five primitives: `component`, `mount`, `h`, `state`, `effect`.
+
+`Brik.mount()` returns an unmount function. Nested `<brik>` descendants mount on their own. Components created after the first load can be mounted with `Brik.mount(node)`.
+
+## State
+
+`Brik.state()` is a `Proxy`. `Brik.effect()` reruns only when a value it read changes. Function children of `Brik.h()` become text nodes that update in place.
+
+```js
+var n = Brik.state(0);
+Brik.h("span", null, function () { return n.value; });
+n.value++;
 ```
 
+## Security
 
-You can explore the full list of utility classes available in the Brik JS stylesheet to style various elements on your webpage.
+HTML strings returned by components are trusted.
 
-### Step 3: Customize Your Theme (Optional)
-
-Brik comes with a light and dark theme by default. You can easily customize the theme colors by modifying the `brikStyleSheet` at the beginning of the stylesheet to match your project's branding.
+Untrusted or remote text must go through `Brik.h()` so it becomes a text node. Do not evaluate agent-supplied JavaScript. Do not treat tag-stripping as sanitization. Component names are allowlisted.
 
 ## Themes
 
-Brik supports light and dark themes, and it can automatically switch between them based on the user's system preferences. You can also provide a theme switcher button on your website to allow users to toggle between light and dark themes.
+The official site follows the original Brik light and dark themes, including system preference and a manual toggle.
 
-## License
+## Develop
 
-Brik is open-source software released under the [MIT License](https://opensource.org/licenses/MIT). You are free to use and modify it for your projects.
+```bash
+npm install
+npm test
+npm run build
+```
+
+`dist/` is the Cloudflare Pages output. `/v1/brik.min.js` stays compatible throughout v1.
+
+```bash
+npx wrangler pages deploy dist --project-name brikjs
+```
 
 ## Brik in action
 
-You can see Brik in action here. You are free to use and modify it for your projects.
-[landing-demo](https://dfralan.github.io/brik/index.html)
-[menu-demo](https://dfralan.github.io/brik/demo.html)
+[brikjs.pages.dev](https://brikjs.pages.dev)
 
-## Acknowledgments
+## Source
 
-Brik is inspired by the principles of minimalism and efficiency. It aims to provide a lightweight alternative to larger CSS frameworks like Bootstrap while maintaining flexibility and ease of use. We thank the open-source community for their contributions to web development.
+https://github.com/dfralan/brik
 
----
+## License
 
-Enjoy using Brik for your web projects! If you have any questions or need further assistance, feel free to reach out to our support team.
+Brik is open-source software released under the [MIT License](https://opensource.org/licenses/MIT).

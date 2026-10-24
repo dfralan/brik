@@ -1,0 +1,15 @@
+{
+  "name": "brik",
+  "private": true,
+  "type": "module",
+  "description": "A tiny reactive runtime for interfaces that build themselves.",
+  "license": "MIT",
+  "scripts": {
+    "build": "node scripts/build.js",
+    "test": "node --test test/brik.test.js"
+  },
+  "devDependencies": {
+    "happy-dom": "^20.0.2",
+    "terser": "^5.44.0"
+  }
+}

@@ -1,31 +1,19 @@
-<!DOCTYPE html>
-<html style="background-color: #EAE9EE;" lang="en" data-theme="light">
-
+<!doctype html>
+<html lang="en">
 <head>
-
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <meta http-equiv="X-UA-Compatible" content="ie=edge">
-    <title>Brik - Landing Template</title>
-    <meta name="description" content="Order now.">
-    <link rel="icon" type="image/svg+xml" href="yendo.svg">
-    <link rel="stylesheet" href="/src/styles/brik.css">
-    <link rel="preconnect" href="https://fonts.googleapis.com">
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Lobster+Two&family=Urbanist:wght@300&display=swap"
-        rel="stylesheet">
-
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Brik — Just enough to exist.</title>
+  <meta name="description" content="A tiny reactive runtime for interfaces that build themselves.">
+  <link rel="icon" href="./brik.svg" type="image/svg+xml">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:wght@400;600&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="./style.css">
+  <script defer src="./brik.min.js"></script>
+  <script defer src="./app.js"></script>
 </head>
-
-<body class="h-screen w-screen flex flex-col justify-center items-center bg-body">
-
-    <!-- Login Form -->
-    <brik welcome></brik>
-    <brik themebtn></brik>
-
-    <!-- Scripts -->
-    <script type="module" src="/src/core/brik.js"></script>
-
+<body>
+  <brik app></brik>
 </body>
-
 </html>
