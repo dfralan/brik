@@ -267,12 +267,23 @@ test("source and minified runtime contain no eval", function () {
 
 test("official website mounts on Brik", async function () {
   await load("<!doctype html><html><body><brik app></brik></body></html>");
+  window.eval(readFileSync(new URL("../site/examples/pomodoro.js", import.meta.url), "utf8"));
   window.eval(readFileSync(new URL("../site/app.js", import.meta.url), "utf8"));
   Brik.mount();
   assert.match(document.querySelector("h1").textContent, /Just enough/);
   assert.match(document.body.textContent, /Brik.component/);
   assert.match(document.querySelector(".agent").textContent, /Copy for agents/);
-  assert.match(document.querySelector(".demo-frame").getAttribute("src"), /pomodoro/);
+  assert.match(document.querySelector("[data-open-widget]").textContent, /Open widget/);
+  document.querySelector("[data-see-code]").click();
+  await tick();
+  assert.match(document.querySelector(".demo-code").textContent, /Brik.component\("pomodoro"/);
+  document.querySelector("[data-open-widget]").click();
+  await tick();
+  assert.ok(document.querySelector(".pomo-layer"));
+  assert.match(document.querySelector(".pomo-time").textContent, /25:00/);
+  document.querySelector(".pomo-x").click();
+  await tick();
+  assert.equal(document.querySelector(".pomo-layer"), null);
   assert.equal(document.querySelectorAll("[data-brik]").length > 5, true);
   document.querySelector(".live button").click();
   await tick();

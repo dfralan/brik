@@ -185,22 +185,63 @@
       h("div", { class: "grid" },
         h("brik", { live: true }),
         h("brik", { nest: true }),
-        h("article", { class: "card demo" },
-          h("div", { class: "demo-head" },
-            h("div", null,
-              h("h3", null, "Pomodoro"),
-              h("p", null, "A real widget: effects, cleanup, and explicit mount / unmount.")
-            ),
-            h("a", { href: "./examples/pomodoro.html" }, "Open")
-          ),
-          h("iframe", {
-            class: "demo-frame",
-            src: "./examples/pomodoro.html?embed=1",
-            title: "Pomodoro",
-            loading: "lazy"
-          })
-        )
+        h("brik", { demo: true })
       )
+    );
+  });
+
+  Brik.component("demo", function () {
+    var showCode = Brik.state(false);
+    var copied = Brik.state(false);
+
+    Brik.effect(function () {
+      return function () {
+        if (window.BrikPomodoro) window.BrikPomodoro.unmount();
+      };
+    });
+
+    var pre = h("pre", null, "");
+    var code = h("div", { class: "demo-code", hidden: "" },
+      h("button", {
+        class: "ghost",
+        type: "button",
+        onclick: function () {
+          if (window.BrikPomodoro) copyText(window.BrikPomodoro.source, copied);
+        }
+      }, function () {
+        return copied.value ? "Copied" : "Copy";
+      }),
+      pre
+    );
+
+    Brik.effect(function () {
+      code.hidden = !showCode.value;
+      if (showCode.value && window.BrikPomodoro) {
+        pre.textContent = window.BrikPomodoro.source;
+      }
+    });
+
+    return h("article", { class: "card demo" },
+      h("h3", null, "Pomodoro"),
+      h("p", null, "A real widget. Open it, then close it with × — that unmounts the tree."),
+      h("div", { class: "demo-actions" },
+        h("button", {
+          type: "button",
+          "data-open-widget": "",
+          onclick: function () {
+            if (window.BrikPomodoro) window.BrikPomodoro.mount();
+          }
+        }, "Open widget"),
+        h("button", {
+          class: "ghost",
+          type: "button",
+          "data-see-code": "",
+          onclick: function () { showCode.value = !showCode.value; }
+        }, function () {
+          return showCode.value ? "Hide code" : "See code";
+        })
+      ),
+      code
     );
   });
 
