@@ -1,0 +1,225 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Brik · Pomodoro</title>
+  <style>
+    :root { color-scheme: dark; }
+    * { box-sizing: border-box; }
+    body {
+      font: 15px/1.5 system-ui, -apple-system, Segoe UI, Roboto, sans-serif;
+      margin: 0; padding: 2rem 1rem; min-height: 100vh;
+      display: grid; place-items: start center;
+      background: #0f0a14; color: #f0e9f5;
+    }
+    body.embed {
+      padding: 1rem;
+      min-height: 0;
+    }
+    .widget {
+      width: 100%; max-width: 440px;
+      background: #1a1222; border: 1px solid #2e2140;
+      border-radius: 16px; padding: 1.25rem;
+    }
+    h1 { font-size: 1rem; margin: 0 0 .15rem; }
+    .sub { margin: 0 0 1.25rem; font-size: .8rem; color: #9a86b3; }
+    .timer {
+      font-size: 3.5rem; font-weight: 700; text-align: center;
+      font-variant-numeric: tabular-nums; letter-spacing: .02em;
+      margin: .5rem 0 .25rem;
+    }
+    .phase {
+      text-align: center; font-size: .8rem; text-transform: uppercase;
+      letter-spacing: .12em; color: #9a86b3; margin-bottom: 1rem;
+    }
+    .phase.work { color: #ff8a5c; }
+    .phase.break { color: #5cd6a8; }
+    .bar {
+      height: 6px; border-radius: 999px; background: #2e2140;
+      overflow: hidden; margin-bottom: 1rem;
+    }
+    .bar > div { height: 100%; background: #b06cff; }
+    .row { display: flex; gap: .5rem; flex-wrap: wrap; }
+    button {
+      font: inherit; cursor: pointer; border-radius: 10px;
+      border: 1px solid #2e2140; background: #241a33; color: inherit;
+      padding: .55rem .9rem;
+    }
+    button:hover { background: #2f2145; }
+    button.primary { background: #b06cff; border-color: #b06cff; color: #14061f; font-weight: 600; }
+    button.primary:hover { background: #c084ff; }
+    button.ghost { background: transparent; }
+    button.ghost:hover { background: #241a33; }
+    h2 {
+      font-size: .75rem; text-transform: uppercase; letter-spacing: .1em;
+      color: #9a86b3; margin: 1.5rem 0 .5rem;
+    }
+    ul { list-style: none; padding: 0; margin: 0; }
+    li {
+      display: flex; justify-content: space-between; align-items: center;
+      padding: .45rem .65rem; border-radius: 8px;
+      background: #140d1c; border: 1px solid #241a33;
+      margin-bottom: .35rem; font-size: .85rem;
+    }
+    li .when { color: #7a6a8e; font-variant-numeric: tabular-nums; }
+    .empty { color: #7a6a8e; font-size: .8rem; font-style: italic; padding: .25rem 0; }
+    .status { font-size: .75rem; color: #7a6a8e; margin-top: 1rem; text-align: center; }
+    .status b { color: #b06cff; font-weight: 600; }
+    .toggle { font-size: .8rem; margin-bottom: 1rem; }
+  </style>
+</head>
+<body>
+  <div id="app">
+    <button id="toggle" class="ghost toggle" type="button">Desmontar widget</button>
+    <div id="host"></div>
+  </div>
+  <script src="../v1/brik.min.js"></script>
+  <script>
+    (function () {
+      "use strict";
+      if (location.search.indexOf("embed") !== -1) document.body.className = "embed";
+
+      var WORK = 25 * 60;
+      var BREAK = 5 * 60;
+      var timer = Brik.state({ phase: "work", remaining: WORK, running: false });
+      var history = Brik.state({ list: [] });
+      var lifecycle = Brik.state({ mounts: 0, unmounts: 0 });
+
+      Brik.component("pomodoro", function () {
+        Brik.effect(function () {
+          if (!timer.running) return;
+          var id = setInterval(function () {
+            if (timer.remaining > 1) {
+              timer.remaining--;
+            } else {
+              var wasWork = timer.phase === "work";
+              if (wasWork) {
+                history.list = history.list.concat({
+                  id: Date.now() + Math.random(),
+                  phase: "work",
+                  at: new Date().toLocaleTimeString("es-AR", { hour: "2-digit", minute: "2-digit" })
+                });
+              }
+              timer.phase = wasWork ? "break" : "work";
+              timer.remaining = wasWork ? BREAK : WORK;
+            }
+          }, 1000);
+          return function () { clearInterval(id); };
+        });
+
+        var barFill = Brik.h("div", { style: "width:0%" });
+        Brik.effect(function () {
+          var total = timer.phase === "work" ? WORK : BREAK;
+          barFill.style.width = (((total - timer.remaining) / total) * 100).toFixed(2) + "%";
+        });
+
+        var timeEl = Brik.h("div", { class: "timer" }, function () {
+          var m = Math.floor(timer.remaining / 60);
+          var s = String(timer.remaining % 60).padStart(2, "0");
+          return m + ":" + s;
+        });
+
+        var phaseEl = Brik.h("div", { class: "phase" });
+        Brik.effect(function () {
+          phaseEl.className = "phase " + timer.phase;
+          phaseEl.textContent = timer.phase === "work" ? "Trabajo" : "Descanso";
+        });
+
+        var ul = Brik.h("ul");
+        var emptyMsg = Brik.h("p", { class: "empty" }, "Sin sesiones completadas.");
+        Brik.effect(function () {
+          var items = history.list;
+          ul.replaceChildren.apply(ul, items.map(function (item) {
+            return Brik.h("li", null,
+              Brik.h("span", null, item.phase === "work" ? "Trabajo" : "Descanso"),
+              Brik.h("span", { class: "when" }, item.at)
+            );
+          }));
+          emptyMsg.style.display = items.length ? "none" : "";
+        });
+
+        function startPause() { timer.running = !timer.running; }
+        function reset() {
+          timer.running = false;
+          timer.phase = "work";
+          timer.remaining = WORK;
+        }
+        function skip() {
+          var wasWork = timer.phase === "work";
+          if (wasWork) {
+            history.list = history.list.concat({
+              id: Date.now() + Math.random(),
+              phase: "work",
+              at: new Date().toLocaleTimeString("es-AR", { hour: "2-digit", minute: "2-digit" })
+            });
+          }
+          timer.phase = wasWork ? "break" : "work";
+          timer.remaining = wasWork ? BREAK : WORK;
+        }
+
+        var playBtn = Brik.h("button", { class: "primary", onclick: startPause });
+        Brik.effect(function () {
+          playBtn.textContent = timer.running ? "Pausar" : "Iniciar";
+        });
+
+        lifecycle.mounts++;
+
+        return Brik.h("div", { class: "widget" },
+          Brik.h("h1", null, "Pomodoro"),
+          Brik.h("p", { class: "sub" }, "Brik · efectos con cleanup · mount y unmount"),
+          phaseEl,
+          timeEl,
+          Brik.h("div", { class: "bar" }, barFill),
+          Brik.h("div", { class: "row" },
+            playBtn,
+            Brik.h("button", { class: "ghost", onclick: reset }, "Reset"),
+            Brik.h("button", { class: "ghost", onclick: skip }, "Saltar")
+          ),
+          Brik.h("h2", null, "Historial"),
+          emptyMsg,
+          ul,
+          Brik.h("p", { class: "status" },
+            "Montajes: ", Brik.h("b", null, function () { return String(lifecycle.mounts); }),
+            " · Desmontajes: ", Brik.h("b", null, function () { return String(lifecycle.unmounts); })
+          )
+        );
+      });
+
+      var host = document.getElementById("host");
+      var toggleBtn = document.getElementById("toggle");
+      var unmount = null;
+
+      function mountWidget() {
+        if (unmount) return;
+        var el = document.createElement("brik");
+        el.setAttribute("pomodoro", "");
+        host.replaceChildren(el);
+        unmount = Brik.mount(el);
+        toggleBtn.textContent = "Desmontar widget";
+      }
+
+      function unmountWidget() {
+        if (!unmount) return;
+        unmount();
+        unmount = null;
+        lifecycle.unmounts++;
+        host.replaceChildren(
+          Brik.h("div", { class: "widget", style: "text-align:center" },
+            Brik.h("p", { class: "empty" }, "Widget desmontado. El intervalo se limpió con el cleanup del efecto."),
+            Brik.h("button", { class: "primary", onclick: mountWidget }, "Remontar")
+          )
+        );
+        toggleBtn.textContent = "Remontar";
+      }
+
+      toggleBtn.addEventListener("click", function () {
+        if (unmount) unmountWidget();
+        else mountWidget();
+      });
+
+      mountWidget();
+    })();
+  </script>
+</body>
+</html>

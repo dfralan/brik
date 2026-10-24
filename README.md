@@ -97,6 +97,8 @@ npx wrangler pages deploy dist --project-name brikjs
 
 [brikjs.pages.dev](https://brikjs.pages.dev)
 
+[Pomodoro widget](https://brikjs.pages.dev/examples/pomodoro.html)
+
 ## Source
 
 https://github.com/dfralan/brik

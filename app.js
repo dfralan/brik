@@ -184,7 +184,22 @@
       ),
       h("div", { class: "grid" },
         h("brik", { live: true }),
-        h("brik", { nest: true })
+        h("brik", { nest: true }),
+        h("article", { class: "card demo" },
+          h("div", { class: "demo-head" },
+            h("div", null,
+              h("h3", null, "Pomodoro"),
+              h("p", null, "A real widget: effects, cleanup, and explicit mount / unmount.")
+            ),
+            h("a", { href: "./examples/pomodoro.html" }, "Open")
+          ),
+          h("iframe", {
+            class: "demo-frame",
+            src: "./examples/pomodoro.html?embed=1",
+            title: "Pomodoro",
+            loading: "lazy"
+          })
+        )
       )
     );
   });

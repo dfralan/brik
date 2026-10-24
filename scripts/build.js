@@ -1,4 +1,4 @@
-import { readFile, writeFile, mkdir, copyFile } from "node:fs/promises";
+import { readFile, writeFile, mkdir, copyFile, cp } from "node:fs/promises";
 import { gzipSync } from "node:zlib";
 import { minify } from "terser";
 
@@ -22,6 +22,7 @@ async function emit(dir) {
   await copyFile("site/app.js", prefix + "app.js");
   await copyFile("site/_headers", prefix + "_headers");
   await copyFile("brik.svg", prefix + "brik.svg");
+  await cp("site/examples", prefix + "examples", { recursive: true });
 }
 
 await emit("dist");

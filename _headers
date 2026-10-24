@@ -11,3 +11,9 @@
 /v1/*
   Access-Control-Allow-Origin: *
   Cache-Control: public, max-age=86400, must-revalidate
+
+/examples/*
+  ! X-Frame-Options
+  X-Frame-Options: SAMEORIGIN
+  ! Content-Security-Policy
+  Content-Security-Policy: default-src 'self'; script-src 'self' 'unsafe-inline'; style-src 'self' 'unsafe-inline'; img-src 'self'; object-src 'none'; base-uri 'none'; frame-ancestors 'self'
