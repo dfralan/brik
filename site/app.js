@@ -313,7 +313,10 @@
 
   Brik.component("foot", function () {
     return h("footer", { class: "foot" },
-      h("span", null, "Brik is a client-side runtime."),
+      h("p", { class: "made" },
+        h("img", { src: "./brik.svg", width: "16", height: "16", alt: "" }),
+        "Made with brik"
+      ),
       h("a", { href: "https://github.com/dfralan/brik" }, "github.com/dfralan/brik")
     );
   });
