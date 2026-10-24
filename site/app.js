@@ -4,7 +4,7 @@
   var AGENT = [
     "Build this UI with Brik. Brik is a tiny client-side reactive runtime: https://brikjs.pages.dev",
     "",
-    "Brik is not React, Vue, Next, or Astro. One file. Zero dependencies. No npm. No compiler. No virtual DOM. No server. The interface exists only in the browser. That is the point. If the UI needs a backend to appear, it is not Brik.",
+    "Brik is not React, Vue, Next, or Astro. One file. Zero dependencies. No npm. No compiler. No virtual DOM. No server. The interface exists only in the browser.",
     "",
     "Load it:",
     CDN,
@@ -23,7 +23,7 @@
     "- Untrusted or remote text goes through Brik.h() as children. Never assign it to innerHTML.",
     "- Never evaluate JavaScript supplied by an agent or a network. Never hide secrets in the client.",
     "- Do not add a router, JSX, a bundler, or another framework unless the user asks.",
-    "- Keep the implementation small. Be brave. Ship the interface where the user already is.",
+    "- Keep the implementation small.",
     "",
     "Build what the user asked for using only Brik."
   ].join("\n");
@@ -71,6 +71,7 @@
     return h("div", { class: "page" },
       h("brik", { nav: true }),
       h("brik", { hero: true }),
+      h("brik", { why: true }),
       h("brik", { examples: true }),
       h("brik", { docs: true }),
       h("brik", { foot: true })
@@ -81,6 +82,7 @@
     return h("header", { class: "nav" },
       h("a", { class: "brand", href: "/" }, logo(22), "Brik"),
       h("div", { class: "nav-links" },
+        h("a", { href: "#why" }, "Why"),
         h("a", { href: "#examples" }, "Examples"),
         h("a", { href: "#use" }, "Use"),
         h("a", { href: "https://github.com/dfralan/brik" }, "GitHub"),
@@ -112,11 +114,10 @@
 
   Brik.component("hero", function () {
     var copied = Brik.state(false);
-    var agent = Brik.state(false);
     return h("section", { class: "hero" },
       logo(48),
       h("h1", null, "Just enough", h("br"), "to exist."),
-      h("p", { class: "lede" }, "The interface lives in the browser. No server to ask permission."),
+      h("p", { class: "lede" }, "A tiny reactive runtime for interfaces that build themselves."),
       h("div", { class: "command" },
         h("code", null, CDN),
         h("button", {
@@ -127,22 +128,59 @@
           return copied.value ? "Copied" : "Copy";
         })
       ),
-      h("button", {
-        class: "agent",
-        type: "button",
-        onclick: function () { copyText(AGENT, agent); }
-      }, function () {
-        return agent.value ? "Copied for agents" : "Copy for agents";
-      }),
-      h("p", { class: "hint" }, "Be brave. Not for everyone. 1.8 KB, client-side, zero dependencies.")
+      h("p", { class: "hint" }, "1.8 KB gzip. Zero dependencies. No npm.")
+    );
+  });
+
+  Brik.component("why", function () {
+    var points = [
+      {
+        title: "Client-side is the product",
+        body: "The UI mounts in the browser and stays there. No hydration, no server render, no backend required for the interface to exist."
+      },
+      {
+        title: "Small enough to drop in",
+        body: "One script. One CDN. Useful when a full framework is too much and a static page is not enough."
+      },
+      {
+        title: "Agents can build with it",
+        body: "A trusted agent can register components, mount trees, and update state through the same public API a human uses."
+      },
+      {
+        title: "CLI, connectors, local apps",
+        body: "Render data you already have. Brik does not fetch, orchestrate, or talk to services. It only reacts."
+      },
+      {
+        title: "Nothing leaves the machine",
+        body: "The interface is assembled where the user is. That is why a client-side microframework still matters."
+      },
+      {
+        title: "Not for everyone",
+        body: "If you need SSR, a router, or a compiler, use something else. Brik is for interfaces that can live in one file."
+      }
+    ];
+
+    return h("section", { class: "section", id: "why" },
+      h("div", { class: "section-head" },
+        h("h2", null, "Why Brik exists"),
+        h("p", null, "Not a platform. A way to let a UI appear without asking a server first.")
+      ),
+      h("div", { class: "grid why-grid" },
+        points.map(function (item) {
+          return h("article", { class: "card" },
+            h("h3", null, item.title),
+            h("p", null, item.body)
+          );
+        })
+      )
     );
   });
 
   Brik.component("examples", function () {
     return h("section", { class: "section", id: "examples" },
       h("div", { class: "section-head" },
-        h("h2", null, "It already exists"),
-        h("p", null, "If it needs a backend to say hello, it is not Brik.")
+        h("h2", null, "See it running"),
+        h("p", null, "These are live Brik components, not mocks.")
       ),
       h("div", { class: "grid" },
         h("brik", { live: true }),
@@ -155,7 +193,7 @@
     var n = Brik.state(0);
     return h("article", { class: "card" },
       h("h3", null, "State"),
-      h("p", null, "The client is the source of truth. Change happens in the open."),
+      h("p", null, "A counter that updates one text node."),
       h("div", { class: "live" },
         h("strong", null, function () { return n.value; }),
         h("button", {
@@ -170,7 +208,7 @@
     var extra = Brik.state(0);
     return h("article", { class: "card" },
       h("h3", null, "Nested"),
-      h("p", null, "An agent can grow a UI the same way a person does: one brick at a time."),
+      h("p", null, "Components that mount other components."),
       h("div", { class: "tree" },
         h("div", { class: "row" }, h("span", { class: "mark" }, "app"), "this page"),
         h("brik", { branch: true }),
@@ -204,48 +242,62 @@
   });
 
   Brik.component("docs", function () {
+    var agent = Brik.state(false);
     var sections = [
       {
         title: "Install",
-        body: "One file. The page is the app. Nothing to compile, nothing waiting on a server.",
+        body: "One file. No npm. No build. Put a root component in the document and load Brik.",
         code: "<body>\n  <brik app></brik>\n  <script defer src=\"./brik.min.js\"></script>\n  <script defer src=\"./app.js\"></script>\n</body>"
       },
       {
         title: "Define",
-        body: "Name it. Mount it. A component is just a function that can exist.",
+        body: "Register a component by name. It may return trusted HTML, a node, or a fragment.",
         code: "Brik.component(\"app\", function () {\n  return Brik.h(\"main\", null, \"hello\");\n});"
       },
       {
         title: "Nest",
-        body: "Interfaces that build themselves. Descendants wake up on their own.",
+        body: "Generated <brik> descendants mount on their own. Parent identity stays internal.",
         code: "Brik.component(\"app\", function () {\n  return \"<main><brik header></brik></main>\";\n});"
       },
       {
         title: "State",
-        body: "The user sees the same memory you write to. No round trip to feel alive.",
+        body: "Proxy state. Effects rerun only when a value they read changes. Nodes stay in place.",
         code: "var n = Brik.state(0);\nBrik.effect(function () {\n  label.textContent = n.value;\n});\nn.value++;"
       },
       {
         title: "Lifecycle",
-        body: "What you mount, you can take apart. No ghosts left in the page.",
+        body: "Each instance has its own id. Effects return a cleanup. Unmount disposes the tree.",
         code: "var stop = Brik.mount();\nstop();"
       },
       {
         title: "Dynamic",
-        body: "Don't wait for the first paint to be the last shape.",
+        body: "Create a <brik> later and mount it. Useful for interfaces that grow over time.",
         code: "var node = document.createElement(\"brik\");\nnode.setAttribute(\"panel\", \"\");\nhost.appendChild(node);\nBrik.mount(node);"
       },
       {
         title: "Untrusted data",
-        body: "The client is public. That is why Brik stays here. Foreign text stays text.",
+        body: "HTML strings are trusted. Put foreign text through Brik.h so it becomes a text node. Never evaluate agent-supplied JavaScript.",
         code: "Brik.h(\"p\", null, remoteText);"
       }
     ];
 
     return h("section", { class: "section", id: "use" },
       h("div", { class: "section-head" },
-        h("h2", null, "Stay on the client"),
-        h("p", null, "Five primitives. The rest is the browser you already trust.")
+        h("h2", null, "Use"),
+        h("p", null, "Five primitives. The rest is the browser.")
+      ),
+      h("div", { class: "agent-box" },
+        h("div", null,
+          h("h3", null, "For agents"),
+          h("p", null, "Copy a brief that tells an agent how to install Brik, register components, and mount a UI.")
+        ),
+        h("button", {
+          class: "agent",
+          type: "button",
+          onclick: function () { copyText(AGENT, agent); }
+        }, function () {
+          return agent.value ? "Copied for agents" : "Copy for agents";
+        })
       ),
       sections.map(function (item) {
         return h("article", { class: "doc" },
@@ -261,7 +313,7 @@
 
   Brik.component("foot", function () {
     return h("footer", { class: "foot" },
-      h("span", null, "Brik stays on the client. That is the point."),
+      h("span", null, "Brik is a client-side runtime."),
       h("a", { href: "https://github.com/dfralan/brik" }, "github.com/dfralan/brik")
     );
   });

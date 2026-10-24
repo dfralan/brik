@@ -192,22 +192,42 @@ button {
   font-size: 0.88rem;
 }
 
-.agent {
-  width: min(36rem, 100%);
-  margin-top: 0.7rem;
-  border: 1px solid var(--fg);
+.why-grid .card {
+  min-height: 0;
+}
+
+.agent-box {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1.25rem;
+  margin-bottom: 0.5rem;
+  padding: 1.25rem;
+  background: var(--field);
   border-radius: 0.75rem;
-  background: transparent;
-  color: var(--fg);
-  padding: 0.85rem 1.1rem;
+}
+
+.agent {
+  flex: 0 0 auto;
+  border: 1px solid var(--fg);
+  border-radius: 0.5rem;
+  background: var(--fg);
+  color: var(--bg);
+  padding: 0.7rem 1rem;
   font-weight: 600;
 }
 
 .agent:hover,
 .agent:focus-visible {
-  background: var(--fg);
-  color: var(--bg);
-  outline: none;
+  outline: 1px solid var(--fg);
+  outline-offset: 3px;
+}
+
+@media (max-width: 640px) {
+  .agent-box {
+    flex-direction: column;
+    align-items: stretch;
+  }
 }
 
 .section {
