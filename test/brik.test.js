@@ -271,6 +271,7 @@ test("official website mounts on Brik", async function () {
   Brik.mount();
   assert.match(document.querySelector("h1").textContent, /Just enough/);
   assert.match(document.body.textContent, /Brik.component/);
+  assert.match(document.querySelector(".agent").textContent, /Copy for agents/);
   assert.equal(document.querySelectorAll("[data-brik]").length > 5, true);
   document.querySelector(".live button").click();
   await tick();
