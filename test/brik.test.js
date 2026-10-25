@@ -41,12 +41,14 @@ test("exposes the public API on a standalone script", async function () {
   assert.equal(typeof Brik.h, "function");
   assert.equal(typeof Brik.state, "function");
   assert.equal(typeof Brik.effect, "function");
+  assert.equal(typeof Brik.html, "function");
+  assert.equal(typeof Brik.unsafeHTML, "function");
 });
 
 test("mounts <brik app> on boot", async function () {
   await load("<!doctype html><html><body><brik app></brik></body></html>");
   Brik.component("app", function () {
-    return "<p>hello</p>";
+    return Brik.html`<p>hello</p>`;
   });
   Brik.mount();
   assert.equal(document.querySelector("p").textContent, "hello");
@@ -56,16 +58,16 @@ test("mounts <brik app> on boot", async function () {
 test("mounts nested components at several levels", async function () {
   await load("<!doctype html><html><body><brik app></brik></body></html>");
   Brik.component("app", function () {
-    return "<main><brik header></brik><brik workspace></brik></main>";
+    return Brik.html`<main><brik header></brik><brik workspace></brik></main>`;
   });
   Brik.component("header", function () {
-    return "<h1>Brik</h1>";
+    return Brik.html`<h1>Brik</h1>`;
   });
   Brik.component("workspace", function () {
-    return "<section><brik panel></brik></section>";
+    return Brik.html`<section><brik panel></brik></section>`;
   });
   Brik.component("panel", function () {
-    return "<p>nested</p>";
+    return Brik.html`<p>nested</p>`;
   });
   Brik.mount();
   assert.equal(document.querySelector("h1").textContent, "Brik");
@@ -76,7 +78,7 @@ test("mounts nested components at several levels", async function () {
 test("mounts components added after the first load", async function () {
   await load("<!doctype html><html><body><div id='host'></div></body></html>");
   Brik.component("later", function () {
-    return "<em>dynamic</em>";
+    return Brik.html`<em>dynamic</em>`;
   });
   var node = document.createElement("brik");
   node.setAttribute("later", "");
@@ -164,7 +166,7 @@ test("unmount disposes instances and effect cleanups", async function () {
         cleaned++;
       };
     });
-    return "<p>live</p>";
+    return Brik.html`<p>live</p>`;
   });
   var unmount = Brik.mount();
   assert.equal(document.querySelector("p").textContent, "live");
@@ -214,7 +216,7 @@ test("inserts untrusted strings as text, not HTML", async function () {
 test("does not evaluate missing or unknown components", async function () {
   await load("<!doctype html><html><body><brik missing></brik><brik app></brik></body></html>");
   Brik.component("app", function () {
-    return "<brik ghost></brik><span>ok</span>";
+    return Brik.html`<brik ghost></brik><span>ok</span>`;
   });
   Brik.mount();
   assert.equal(document.querySelector("span").textContent, "ok");
@@ -226,17 +228,17 @@ test("does not evaluate missing or unknown components", async function () {
 test("stops recursive self-mounting before it runs away", async function () {
   await load("<!doctype html><html><body><brik app></brik></body></html>");
   Brik.component("app", function () {
-    return "<brik app></brik>";
+    return Brik.html`<brik app></brik>`;
   });
   assert.throws(function () {
     Brik.mount();
   }, /nesting limit/);
 });
 
-test("trusted HTML from a component can nest further briks", async function () {
+test("template markup can nest further briks", async function () {
   await load("<!doctype html><html><body><brik app></brik></body></html>");
   Brik.component("app", function () {
-    return "<section><brik child></brik></section>";
+    return Brik.html`<section><brik child></brik></section>`;
   });
   Brik.component("child", function () {
     return Brik.h("strong", null, "inside");
@@ -248,7 +250,7 @@ test("trusted HTML from a component can nest further briks", async function () {
 test("async components mount after they resolve", async function () {
   await load("<!doctype html><html><body><brik app></brik></body></html>");
   Brik.component("app", function () {
-    return Promise.resolve("<p>later</p>");
+    return Promise.resolve(Brik.html`<p>later</p>`);
   });
   Brik.mount();
   await tick();
@@ -355,6 +357,46 @@ test("theme accordion docs include overview and api", async function () {
   tabs.forEach(function (el) {
     assert.equal(el.getAttribute("role"), "tab");
   });
+});
+
+test("theme examples switch between markup, h, and html", async function () {
+  await load("<!doctype html><html data-brick='accordion'><body><brik theme-docs></brik></body></html>");
+  window.eval(readFileSync(new URL("../site/theme/docs.js", import.meta.url), "utf8"));
+  Brik.mount();
+  var play = document.querySelector(".docs-play");
+  assert.equal(play.querySelector(".docs-source").hidden, true);
+  play.querySelectorAll("[role=tab]")[1].click();
+  await tick();
+  var pre = play.querySelector(".docs-code");
+  var modes = play.querySelectorAll(".docs-style button");
+  assert.equal(play.querySelector(".docs-source").hidden, false);
+  assert.match(pre.textContent, /<details class="brik-item" open>/);
+  modes[1].click();
+  await tick();
+  assert.match(pre.textContent, /Brik\.h\("details", \{ class: "brik-item", open: true \}/);
+  assert.match(document.querySelectorAll(".docs-play .docs-code")[1].textContent, /Brik\.h\(/);
+  assert.equal(document.querySelectorAll(".docs-source")[1].hidden, true);
+  modes[2].click();
+  await tick();
+  assert.match(pre.textContent, /Brik\.html`/);
+  assert.match(pre.textContent, /<summary>What is a brick\?<\/summary>/);
+  modes[0].click();
+  await tick();
+  assert.match(pre.textContent, /<div class="brik-accordion">/);
+
+  await load("<!doctype html><html data-brick='dialog'><body><brik theme-docs></brik></body></html>");
+  window.eval(readFileSync(new URL("../site/theme/docs.js", import.meta.url), "utf8"));
+  Brik.mount();
+  var dialogPlay = document.querySelector(".docs-play");
+  dialogPlay.querySelectorAll("[role=tab]")[1].click();
+  dialogPlay.querySelectorAll(".docs-style button")[1].click();
+  await tick();
+  var dialogCode = dialogPlay.querySelector(".docs-code").textContent;
+  assert.match(dialogCode, /var dialog = Brik\.h\("dialog"/);
+  assert.match(dialogCode, /dialog\.showModal\(\)/);
+  dialogPlay.querySelectorAll(".docs-style button")[2].click();
+  await tick();
+  assert.match(dialogPlay.querySelector(".docs-code").textContent, /var dialog = Brik\.html`/);
 });
 
 test("theme home presents the library landing", async function () {
@@ -494,15 +536,20 @@ test("state is shallow and uses Object.is", async function () {
   assert.equal(nanSeen, 1);
 });
 
-test("h() refuses string event handlers and accepts unsafeHTML", async function () {
+test("h() refuses string event handlers and raw HTML props", async function () {
   await load();
   var el = Brik.h("a", { onclick: "alert(1)", href: "https://example.com" });
   assert.equal(el.getAttribute("onclick"), null);
   assert.equal(el.getAttribute("href"), "https://example.com");
-  var trusted = Brik.h("div", { html: "<em id='via-html'>ok</em>" });
-  assert.equal(trusted.querySelector("#via-html").textContent, "ok");
-  var also = Brik.h("div", { unsafeHTML: "<strong id='via-unsafe'>ok</strong>" });
-  assert.equal(also.querySelector("#via-unsafe").textContent, "ok");
+  assert.equal(Brik.h("a", { href: "javascript:alert(1)" }).getAttribute("href"), null);
+  assert.equal(Brik.h("iframe", { src: "data:text/html,hi", srcdoc: "<script>1</script>" }).getAttribute("src"), null);
+  var raw = Brik.h("div", { html: "<em id='via-html'>ok</em>", unsafeHTML: "<strong id='via-unsafe'>ok</strong>" });
+  assert.equal(raw.querySelector("em"), null);
+  assert.equal(raw.querySelector("strong"), null);
+  var explicit = Brik.h("div", { unsafeHTML: Brik.unsafeHTML("<strong id='via-unsafe'>ok</strong>") });
+  assert.equal(explicit.querySelector("#via-unsafe").textContent, "ok");
+  var forged = Brik.h("div", { unsafeHTML: { brand: {}, html: "<b id='forged'>x</b>" } });
+  assert.equal(forged.querySelector("#forged"), null);
 });
 
 test("last component registration wins and fragments mount once", async function () {
@@ -543,4 +590,89 @@ test("h() binds events and keeps text children safe", async function () {
   assert.equal(button.textContent, "<b>nope</b>");
   button.click();
   assert.equal(clicks, 1);
+});
+
+test("a component string is text, never markup", async function () {
+  await load("<!doctype html><html><body><brik app></brik></body></html>");
+  Brik.component("app", function () {
+    return "<img src=x onerror=alert(1)><a href=\"javascript:alert(1)\">x</a>";
+  });
+  Brik.mount();
+  var host = document.querySelector("[data-brik='app']");
+  assert.equal(host.querySelector("img"), null);
+  assert.equal(host.querySelector("a"), null);
+  assert.match(host.textContent, /<img src=x/);
+});
+
+test("html templates keep data out of the markup parser", async function () {
+  await load("<!doctype html><html><body><brik app></brik></body></html>");
+  var payloads = [
+    "<img src=x onerror=alert(1)>",
+    "<svg onload=alert(1)>",
+    "<a href=\"javascript:alert(1)\">click</a>",
+    "\" onmouseover=\"alert(1)",
+    "<iframe srcdoc=\"<script>alert(1)</script>\"></iframe>"
+  ];
+  var count = Brik.state(0);
+  var clicks = 0;
+  var button;
+  Brik.component("app", function () {
+    return Brik.html`
+      <div class="card">
+        <h1>Hola</h1>
+        <p>${payloads[0]}</p>
+        <span>${function () { return count.value + payloads[1]; }}</span>
+        <a href=${"javascript:alert(1)"} id="js">link</a>
+        <a href=${"https://brikjs.pages.dev/llms.txt"} id="ok">docs</a>
+        <a href=${"#why"} id="hash">why</a>
+        <span id="blob">${payloads[2]}</span>
+        <button onclick=${"alert(1)"} id="bad">no</button>
+        <button onclick=${function () { clicks++; }} id="go">Sumar</button>
+      </div>
+    `;
+  });
+  var stop = Brik.mount();
+  var card = document.querySelector(".card");
+  button = document.getElementById("go");
+  assert.equal(card.querySelector("img"), null);
+  assert.equal(card.querySelector("svg"), null);
+  assert.equal(card.querySelector("iframe"), null);
+  assert.match(card.querySelector("p").textContent, /<img src=x/);
+  assert.equal(card.querySelector("p").children.length, 0);
+  assert.equal(document.getElementById("ok").getAttribute("href"), "https://brikjs.pages.dev/llms.txt");
+  assert.equal(document.getElementById("hash").getAttribute("href"), "#why");
+  assert.equal(document.getElementById("js").getAttribute("href"), null);
+  assert.equal(document.getElementById("blob").children.length, 0);
+  assert.match(document.getElementById("blob").textContent, /javascript:alert/);
+  assert.equal(document.getElementById("bad").getAttribute("onclick"), null);
+  assert.equal(document.getElementById("go").getAttribute("onclick"), null);
+  button.click();
+  assert.equal(clicks, 1);
+  var same = card;
+  count.value = 2;
+  await tick();
+  assert.equal(document.querySelector(".card"), same);
+  assert.equal(document.getElementById("go"), button);
+  assert.match(card.querySelector("span").textContent, /^2<svg/);
+  stop();
+  button.click();
+  assert.equal(clicks, 1);
+});
+
+test("static template handlers and javascript urls are dropped", async function () {
+  await load();
+  var node = Brik.html`<a href="javascript:alert(1)" onclick="alert(1)">x</a>`;
+  assert.equal(node.getAttribute("href"), null);
+  assert.equal(node.getAttribute("onclick"), null);
+  var script = Brik.html`<div><script>window.pwned = 1</script><b>ok</b></div>`;
+  assert.equal(script.querySelector("script"), null);
+  assert.equal(script.querySelector("b").textContent, "ok");
+  assert.equal(window.pwned, undefined);
+});
+
+test("html is only a template tag", async function () {
+  await load();
+  assert.throws(function () {
+    Brik.html("<img src=x onerror=alert(1)>");
+  });
 });

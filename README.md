@@ -8,7 +8,7 @@ A tiny reactive runtime for interfaces that build themselves.
 
 One JavaScript file. One CDN. One root component. No npm, no compiler, no virtual DOM.
 
-The latest build is 1880 B gzip for the runtime and 2851 B gzip for the theme. `npm run build` prints the current sizes. Theme CSS is a separate, optional file.
+The latest build is 2997 B gzip for the runtime and 2851 B gzip for the theme. `npm run build` prints the current sizes. Theme CSS is a separate, optional file.
 
 ## Overview
 
@@ -40,7 +40,7 @@ Subresource Integrity for this build:
 <script
   defer
   src="https://brikjs.pages.dev/v1/brik.min.js"
-  integrity="sha384-vf6CIspQe6kHyNxgwm3oQLeqTVyJjDYoVsDhXceo0hAyE5E9lUpD3zbb2dpQqFXu"
+  integrity="sha384-OKgweKaenb1QrdWHsssFie0uJsJciVOGcGUoEfo8uiiQTELD/IZdgy26bUoJAAKo"
   crossorigin="anonymous"></script>
 <link
   rel="stylesheet"
@@ -65,7 +65,7 @@ Current hashes are published at [`/v1/integrity.json`](https://brikjs.pages.dev/
 
 ```js
 Brik.component("app", function () {
-  return "<main><brik header></brik><brik counter></brik></main>";
+  return Brik.html`<main><brik header></brik><brik counter></brik></main>`;
 });
 
 Brik.component("header", function () {
@@ -80,7 +80,7 @@ Brik.component("counter", function () {
 });
 ```
 
-Five primitives: `component`, `mount`, `h`, `state`, `effect`.
+Five primitives: `component`, `mount`, `h`, `state`, `effect`. `html` is a template tag for the same model.
 
 `Brik.mount()` returns an unmount function. Nested `<brik>` descendants mount on their own. Components created after the first load can be mounted with `Brik.mount(node)`.
 
@@ -96,13 +96,33 @@ n.value++;
 
 Effects created after `await` are not owned by the instance that started the mount.
 
+## Templates
+
+`Brik.html` is a tagged template. The static markup is structure. Interpolated values are data: strings become text, nodes are inserted, and functions in the text are reactive. A function on `onclick` (or any `on*` attribute) is a listener. The node is not rebuilt when state changes. Effects from the template are disposed with the component.
+
+```js
+return Brik.html`
+  <div class="card">
+    <h1>Hola</h1>
+    <p>${name}</p>
+    <button onclick=${function () { count.value++; }}>
+      ${function () { return count.value; }}
+    </button>
+  </div>
+`;
+```
+
+`Brik.html` is only a template tag. Calling it with a string throws. It does not compile expressions written inside the markup, and it does not use `eval`.
+
 ## Security
 
-HTML strings returned by components, and `html` / `unsafeHTML` on `Brik.h()`, are trusted markup. They are unsafe for external data.
+A string returned by a component is text. It is not parsed as HTML. Children of `Brik.h()` are text too. Event handlers exist only when you pass a function. `href`, `src`, `action`, and the other URL attributes accept `http:`, `https:`, and, for links, `mailto:` and `tel:`. `javascript:` and `data:` are dropped. `srcdoc` is ignored.
 
-Untrusted or remote text must go through `Brik.h()` as a child so it becomes a text node. String `on*` properties are ignored. `href` and `src` are assigned as written. Do not evaluate agent-supplied JavaScript. Do not treat tag-stripping as sanitization. Component names are allowlisted.
+`Brik.unsafeHTML(string)` is the explicit escape hatch. It does not sanitize. A raw string, or a lookalike object, is not accepted as HTML. Do not pass external data to it.
 
-A third-party script runs with the privileges of the host page. Brik does not sandbox modules. For untrusted code, use a sandboxed iframe.
+Do not evaluate agent-supplied JavaScript. Do not treat tag-stripping as sanitization. Component names are allowlisted.
+
+A third-party script runs with the privileges of the host page. Brik does not sandbox modules. For untrusted code, use a sandboxed iframe. The site sends a Content-Security-Policy that blocks inline scripts.
 
 ## Theme
 

@@ -135,6 +135,48 @@
     return stop;
   }
 
+  var BRAND = {};
+  var URL_ATTR = { href: 1, src: 1, action: 1, formaction: 1 };
+
+  function isHTML(value) {
+    return !!value && value.brand === BRAND;
+  }
+
+  function unsafeHTML(value) {
+    if (typeof value !== "string") throw new Error("Brik: unsafeHTML");
+    return { brand: BRAND, html: value };
+  }
+
+  function isEvent(name) {
+    name = name.toLowerCase();
+    return name.length > 2 && name.charAt(0) === "o" && name.charAt(1) === "n";
+  }
+
+  function listen(el, type, fn) {
+    effect(function () {
+      el.addEventListener(type, fn);
+      return function () { el.removeEventListener(type, fn); };
+    });
+  }
+
+  function urlOK(el, name, value) {
+    name = String(name).toLowerCase();
+    if (name === "srcdoc") return 0;
+    var check = URL_ATTR[name] || (name === "data" && el.tagName === "OBJECT");
+    if (!check || value == null || value === false || value === "") return 1;
+    try {
+      var proto = new URL(String(value).trim(), document.baseURI).protocol;
+      if (proto === "http:" || proto === "https:") return 1;
+      return name === "href" && (proto === "mailto:" || proto === "tel:");
+    } catch (err) {
+      return 0;
+    }
+  }
+
+  function textOf(value) {
+    return value == null || value === false ? "" : String(value);
+  }
+
   function append(el, child) {
     if (child == null || child === false) return;
     if (Array.isArray(child)) {
@@ -144,14 +186,41 @@
     if (typeof child === "function") {
       var text = document.createTextNode("");
       el.appendChild(text);
-      effect(function () {
-        var value = child();
-        text.textContent = value == null ? "" : String(value);
-      });
+      effect(function () { text.textContent = textOf(child()); });
+      return;
+    }
+    if (isHTML(child)) {
+      el.appendChild(parseHTML(child.html));
       return;
     }
     if (child instanceof Node) el.appendChild(child);
     else el.appendChild(document.createTextNode(String(child)));
+  }
+
+  function assign(el, key, value) {
+    if (value == null || value === false) return;
+    if (key === "class" || key === "className") {
+      if (typeof value === "function") effect(function () { el.className = textOf(value()); });
+      else el.className = value;
+      return;
+    }
+    if (key === "style" && value && typeof value === "object" && !isHTML(value)) {
+      for (var name in value) el.style[name] = value[name];
+      return;
+    }
+    if (key === "ref" && typeof value === "function") return value;
+    if (key === "html") return;
+    if (key === "unsafeHTML") {
+      if (isHTML(value)) el.appendChild(parseHTML(value.html));
+      return;
+    }
+    if (isEvent(key)) {
+      if (typeof value === "function") listen(el, key.slice(2).toLowerCase(), value);
+      return;
+    }
+    if (typeof value === "function") return;
+    if (!urlOK(el, key, value)) return;
+    el.setAttribute(key, value === true ? "" : value);
   }
 
   function h(tag, props) {
@@ -160,21 +229,172 @@
     if (props) {
       for (var key in props) {
         if (!Object.prototype.hasOwnProperty.call(props, key)) continue;
-        var value = props[key];
-        if (value == null || value === false) continue;
-        if (key === "class" || key === "className") el.className = value;
-        else if (key === "style" && typeof value === "object") {
-          for (var name in value) el.style[name] = value[name];
-        }         else if (key === "html" || key === "unsafeHTML") el.innerHTML = String(value);
-        else if (key === "ref" && typeof value === "function") ref = value;
-        else if (key.length > 2 && key.charAt(0) === "o" && key.charAt(1) === "n") {
-          if (typeof value === "function") el.addEventListener(key.slice(2).toLowerCase(), value);
-        } else el.setAttribute(key, value === true ? "" : value);
+        var got = assign(el, key, props[key]);
+        if (typeof got === "function") ref = got;
       }
     }
     for (var i = 2; i < arguments.length; i++) append(el, arguments[i]);
     if (ref) ref(el);
     return el;
+  }
+
+  function parseHTML(markup) {
+    var tpl = document.createElement("template");
+    tpl.innerHTML = markup;
+    return tpl.content;
+  }
+
+  function holeParts(str, vals) {
+    if (str.indexOf("\u0001") === -1) return null;
+    var re = /\u0001(\d+)\u0001/g;
+    var out = [];
+    var last = 0;
+    var found = 0;
+    var m;
+    while ((m = re.exec(str))) {
+      found = 1;
+      if (m.index > last) out.push(str.slice(last, m.index));
+      out.push(vals[+m[1]]);
+      last = m.index + m[0].length;
+    }
+    if (!found) return null;
+    if (last < str.length) out.push(str.slice(last));
+    return out;
+  }
+
+  function put(anchor, value) {
+    var parent = anchor.parentNode;
+    if (value == null || value === false) {
+      parent.removeChild(anchor);
+      return;
+    }
+    if (typeof value === "function") {
+      effect(function () { anchor.textContent = textOf(value()); });
+      return;
+    }
+    if (Array.isArray(value)) {
+      for (var i = 0; i < value.length; i++) {
+        var mark = document.createTextNode("");
+        parent.insertBefore(mark, anchor);
+        put(mark, value[i]);
+      }
+      parent.removeChild(anchor);
+      return;
+    }
+    if (isHTML(value)) {
+      parent.insertBefore(parseHTML(value.html), anchor);
+      parent.removeChild(anchor);
+      return;
+    }
+    if (value instanceof Node) {
+      parent.insertBefore(value, anchor);
+      parent.removeChild(anchor);
+      return;
+    }
+    anchor.textContent = String(value);
+  }
+
+  function expandText(node, vals) {
+    var text = node.nodeValue;
+    if (!text || text.indexOf("\u0001") === -1) return;
+    var parent = node.parentNode;
+    var re = /\u0001(\d+)\u0001/g;
+    var last = 0;
+    var m;
+    while ((m = re.exec(text))) {
+      if (m.index > last) parent.insertBefore(document.createTextNode(text.slice(last, m.index)), node);
+      var anchor = document.createTextNode("");
+      parent.insertBefore(anchor, node);
+      put(anchor, vals[+m[1]]);
+      last = m.index + m[0].length;
+    }
+    if (last < text.length) node.nodeValue = text.slice(last);
+    else parent.removeChild(node);
+  }
+
+  function bindAttr(el, name, raw, vals) {
+    var key = name.toLowerCase();
+    if (key === "srcdoc") {
+      el.removeAttribute(name);
+      return;
+    }
+    var parts = holeParts(raw, vals);
+    if (isEvent(key)) {
+      el.removeAttribute(name);
+      el[key] = null;
+      if (parts && parts.length === 1 && typeof parts[0] === "function") listen(el, key.slice(2), parts[0]);
+      return;
+    }
+    if (!parts) {
+      if (!urlOK(el, key, raw)) el.removeAttribute(name);
+      return;
+    }
+    function render() {
+      var present = 0;
+      var out = "";
+      for (var i = 0; i < parts.length; i++) {
+        var bit = parts[i];
+        if (typeof bit === "function") bit = bit();
+        if (bit == null || bit === false) continue;
+        present = 1;
+        if (bit !== true) out += String(bit);
+      }
+      if (!present || !urlOK(el, key, out)) el.removeAttribute(name);
+      else el.setAttribute(name, out);
+    }
+    var dynamic = 0;
+    for (var i = 0; i < parts.length; i++) if (typeof parts[i] === "function") dynamic = 1;
+    if (dynamic) effect(render);
+    else render();
+  }
+
+  function walk(node, vals) {
+    if (node.nodeType === 11) {
+      var roots = [];
+      for (var child = node.firstChild; child; child = child.nextSibling) roots.push(child);
+      for (var r = 0; r < roots.length; r++) walk(roots[r], vals);
+      return;
+    }
+    if (node.nodeType === 1) {
+      if (node.tagName === "SCRIPT") {
+        node.parentNode.removeChild(node);
+        return;
+      }
+      var names = [];
+      for (var i = 0; i < node.attributes.length; i++) names.push(node.attributes[i].name);
+      for (var j = 0; j < names.length; j++) bindAttr(node, names[j], node.getAttribute(names[j]), vals);
+      var kids = [];
+      for (var next = node.firstChild; next; next = next.nextSibling) kids.push(next);
+      for (var k = 0; k < kids.length; k++) walk(kids[k], vals);
+      return;
+    }
+    if (node.nodeType === 3) expandText(node, vals);
+  }
+
+  function blank(node) {
+    return node && node.nodeType === 3 && !node.nodeValue.trim();
+  }
+
+  function unwrap(frag) {
+    while (blank(frag.firstChild)) frag.removeChild(frag.firstChild);
+    while (blank(frag.lastChild)) frag.removeChild(frag.lastChild);
+    return frag.childNodes.length === 1 ? frag.firstChild : frag;
+  }
+
+  function html(statics) {
+    if (!statics || !statics.raw) throw new Error("Brik: html");
+    var vals = [];
+    var parts = "";
+    for (var i = 0; i < statics.length; i++) {
+      parts += statics[i];
+      if (i < statics.length - 1) {
+        vals.push(arguments[i + 1]);
+        parts += "\u0001" + i + "\u0001";
+      }
+    }
+    var frag = parseHTML(parts);
+    walk(frag, vals);
+    return unwrap(frag);
   }
 
   function component(name, fn) {
@@ -197,8 +417,9 @@
   }
 
   function apply(el, result) {
-    if (result == null) return;
-    if (typeof result === "string") el.innerHTML = result;
+    if (result == null || result === false) return;
+    if (typeof result === "string" || typeof result === "number") el.textContent = String(result);
+    else if (isHTML(result)) el.replaceChildren(parseHTML(result.html));
     else if (result instanceof Node) el.replaceChildren(result);
   }
 
@@ -338,6 +559,8 @@
     component: component,
     mount: mount,
     h: h,
+    html: html,
+    unsafeHTML: unsafeHTML,
     state: state,
     effect: effect
   };

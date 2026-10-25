@@ -165,9 +165,22 @@
   border-bottom: 1px solid var(--line);
 }
 
-.docs-play-tabs {
+.docs-play-tabs,
+.docs-style {
   display: flex;
   align-items: center;
+}
+
+.docs-style {
+  gap: 1rem;
+  padding: 0.15rem 1.1rem 0;
+  border-bottom: 1px solid var(--line);
+}
+
+.docs-style .brik-tab {
+  margin-right: 0;
+  padding-right: 0.45rem;
+  padding-left: 0.45rem;
 }
 
 .docs-play-bar .copy {

@@ -14,14 +14,15 @@
     "Public API — five primitives:",
     "Brik.component(name, fn)  register a component. Name must match /^[a-z][a-z0-9-]*$/.",
     "Brik.mount(node?)         mount <brik> elements. Returns unmount().",
-    "Brik.h(tag, props, ...children)  create DOM. String children are text nodes. Function children are reactive text. html/unsafeHTML is trusted markup.",
+    "Brik.h(tag, props, ...children)  create DOM. String children are text nodes. Function children are reactive text. on* props accept functions only.",
+    "Brik.html`...`  tagged template. Static markup is structure. Interpolations are text, nodes, or callbacks. Not concatenated into HTML.",
+    "Brik.unsafeHTML(string)  explicit markup. Does not sanitize. A plain string is never HTML.",
     "Brik.state(value)         shallow Proxy. Replacing a property is reactive. Mutating a nested object in place is not.",
     "Brik.effect(fn)           reruns when a value it read changes. May return a cleanup. Effects after await are not owned by the mount.",
     "",
     "Rules:",
     "- Nested <brik name></brik> elements mount recursively after the parent renders.",
-    "- HTML strings returned by a component are trusted.",
-    "- Untrusted or remote text goes through Brik.h() as children. Never assign it to innerHTML.",
+    "- A string returned by a component is text, not HTML. Untrusted text goes through Brik.h() or a ${} slot. Never assign it to innerHTML.",
     "- Never evaluate JavaScript supplied by an agent or a network. Never hide secrets in the client.",
     "- Do not add a router, JSX, a bundler, or another framework unless the user asks.",
     "- Keep the implementation small.",
@@ -463,8 +464,8 @@
       },
       {
         title: "Untrusted data",
-        body: "HTML strings returned by a component, and html / unsafeHTML on Brik.h, are trusted markup. Foreign text goes through Brik.h as a child so it becomes a text node. String on* properties are ignored. href and src are assigned as written.",
-        code: "Brik.h(\"p\", null, remoteText);\nBrik.h(\"div\", { unsafeHTML: trustedMarkup });"
+        body: "A string returned by a component is text. Brik.html parses only the static markup you wrote; interpolated values stay text unless they are nodes or event callbacks. Brik.unsafeHTML is the explicit escape hatch and does not sanitize.",
+        code: "Brik.h(\"p\", null, remoteText);\nBrik.html`<p>${remoteText}</p>`;\nBrik.unsafeHTML(alreadyTrusted);"
       },
       {
         title: "Shallow state",

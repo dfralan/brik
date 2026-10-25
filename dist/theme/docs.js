@@ -76,7 +76,7 @@
       class: "brik-button ghost copy",
       type: "button",
       "aria-label": "Copy code",
-      onclick: function () { copy(text, flag); }
+      onclick: function () { copy(typeof text === "function" ? text() : text, flag); }
     }, function () { return flag.value ? "Copied" : "Copy"; });
   }
 
@@ -182,10 +182,94 @@
     );
   }
 
+  var BOOL_ATTR = { open: 1, checked: 1, disabled: 1, selected: 1, readonly: 1, required: 1, multiple: 1 };
+  var source = Brik.state("markup");
+
+  function splitSnippet(code) {
+    var cut = code.search(/\n\n[A-Za-z_$]/);
+    if (cut === -1) return { html: code, tail: "" };
+    return { html: code.slice(0, cut), tail: code.slice(cut).trim() };
+  }
+
+  function jsString(value) {
+    return JSON.stringify(value);
+  }
+
+  function contentNodes(parent) {
+    var out = [];
+    for (var node = parent.firstChild; node; node = node.nextSibling) {
+      if (node.nodeType === 1) out.push(node);
+      else if (node.nodeType === 3 && node.nodeValue.trim()) out.push(node);
+    }
+    return out;
+  }
+
+  function printNode(node, depth) {
+    var pad = "";
+    for (var i = 0; i < depth; i++) pad += "  ";
+    if (node.nodeType === 3) return pad + jsString(node.nodeValue.trim());
+    var props = [];
+    for (var a = 0; a < node.attributes.length; a++) {
+      var attr = node.attributes[a];
+      var value = attr.value === "" && BOOL_ATTR[attr.name] ? "true" : jsString(attr.value);
+      props.push(attr.name + ": " + value);
+    }
+    var line = "Brik.h(" + jsString(node.tagName.toLowerCase()) + ", " + (props.length ? "{ " + props.join(", ") + " }" : "null");
+    var kids = contentNodes(node);
+    if (!kids.length) return pad + line + ")";
+    if (kids.length === 1 && kids[0].nodeType === 3) return pad + line + ", " + jsString(kids[0].nodeValue.trim()) + ")";
+    var lines = [pad + line + ","];
+    for (var k = 0; k < kids.length; k++) lines.push(printNode(kids[k], depth + 1) + ",");
+    lines.push(pad + ")");
+    return lines.join("\n");
+  }
+
+  function renderSource(code, mode) {
+    if (mode === "markup") return code;
+    var parts = splitSnippet(code);
+    var tpl = document.createElement("template");
+    tpl.innerHTML = parts.html;
+    var kids = contentNodes(tpl.content);
+    if (!kids.length) return code;
+    if (mode === "html") {
+      var body = parts.html.replace(/\s+$/, "").split("\n").map(function (line) { return "  " + line; }).join("\n");
+      var tagged = "Brik.html`\n" + body + "\n`";
+      if (!parts.tail || kids.length !== 1) return tagged;
+      var htmlName = parts.tail.split(".")[0];
+      return "var " + htmlName + " = " + tagged + ";\n" + parts.tail;
+    }
+    var calls = kids.map(function (node) { return printNode(node, 0); }).join(";\n");
+    if (!parts.tail || kids.length !== 1) return kids.length > 1 ? calls + ";" : calls;
+    var name = parts.tail.split(".")[0];
+    return "var " + name + " = " + calls + ";\n" + parts.tail;
+  }
+
+  function sourceSwitch() {
+    var modes = [["markup", "HTML"], ["h", "h()"], ["html", "html"]];
+    var buttons = modes.map(function (mode) {
+      return h("button", {
+        class: "brik-tab",
+        type: "button",
+        "aria-pressed": "false",
+        onclick: function () { source.value = mode[0]; }
+      }, mode[1]);
+    });
+    Brik.effect(function () {
+      for (var i = 0; i < modes.length; i++) {
+        var on = source.value === modes[i][0];
+        buttons[i].className = on ? "brik-tab active" : "brik-tab";
+        buttons[i].setAttribute("aria-pressed", on ? "true" : "false");
+      }
+    });
+    return h("div", { class: "docs-style", role: "group", "aria-label": "Write the example as" }, buttons);
+  }
+
   function playground(demoFn, code) {
     var tab = Brik.state("preview");
     var preview = h("div", { class: "docs-demo" }, demoFn());
-    var codeEl = h("pre", { class: "docs-code" }, code);
+    var codeEl = h("pre", { class: "docs-code" }, function () { return renderSource(code, source.value); });
+    var styles = sourceSwitch();
+    var sourcePane = h("div", { class: "docs-source" }, styles, codeEl);
     var previewBtn = h("button", {
       class: "brik-tab active",
       type: "button",
@@ -207,7 +291,7 @@
       previewBtn.setAttribute("aria-selected", isPreview ? "true" : "false");
       codeBtn.setAttribute("aria-selected", isPreview ? "false" : "true");
       preview.hidden = !isPreview;
-      codeEl.hidden = isPreview;
+      sourcePane.hidden = isPreview;
     });
     return h("div", { class: "docs-play" },
       h("div", { class: "docs-play-bar" },
@@ -215,10 +299,10 @@
           previewBtn,
           codeBtn
         ),
-        copyBtn(code)
+        copyBtn(function () { return renderSource(code, source.value); })
       ),
       preview,
-      codeEl
+      sourcePane
     );
   }
 

@@ -16,7 +16,7 @@ A module is a JavaScript file, a stylesheet, or both. It is not registered with 
 
 ## Rules
 
-- Use the public API: `component`, `mount`, `h`, `state`, `effect`.
+- Use the public API: `component`, `mount`, `h`, `html`, `state`, `effect`. A string is text. `unsafeHTML` does not sanitize.
 - Do not monkey-patch Brik internals or read private variables.
 - Prefer an exact, versioned HTTPS URL.
 - Publish a checksum. Consumers can use Subresource Integrity:

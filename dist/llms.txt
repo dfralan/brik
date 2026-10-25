@@ -23,11 +23,13 @@ Checksums: https://brikjs.pages.dev/v1/integrity.json
 
 - `Brik.component(name, fn)` registers a component. The name matches `/^[a-z][a-z0-9-]*$/`.
 - `Brik.mount(node?)` mounts `<brik>` elements and returns `unmount()`.
-- `Brik.h(tag, props, ...children)` creates DOM. String children are text. Function children are reactive text. `html` and `unsafeHTML` are trusted markup.
+- `Brik.h(tag, props, ...children)` creates DOM. String children are text. Function children are reactive text. `on*` props accept functions only.
+- `Brik.html\`...\`` is a tagged template. Static markup is structure. Interpolated strings are text. A function in text is reactive. A function on an `on*` attribute is a listener. The template is not a string passed to `innerHTML` with the values concatenated.
+- `Brik.unsafeHTML(string)` parses markup and does not sanitize. Do not pass external data. A plain string is never HTML.
 - `Brik.state(value)` is a shallow Proxy. Replacing a property is reactive. Mutating a nested object in place is not.
 - `Brik.effect(fn)` reruns when a value it read changes. It may return a cleanup. Effects created after `await` are not owned by the mount.
 
-Nested `<brik name>` elements mount after the parent renders. HTML strings returned by a component are trusted. Untrusted text goes through `Brik.h()` as a child. Never evaluate JavaScript supplied by an agent or a network.
+Nested `<brik name>` elements inside `Brik.html` or `Brik.h` mount after the parent renders. A string returned by a component is text, not markup. `javascript:` and `data:` URLs are dropped. Never evaluate JavaScript supplied by an agent or a network.
 
 ## Theme
 
