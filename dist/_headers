@@ -8,6 +8,10 @@
   Access-Control-Allow-Origin: *
   Cache-Control: public, max-age=0, must-revalidate
 
+/brik-theme.min.css
+  Access-Control-Allow-Origin: *
+  Cache-Control: public, max-age=0, must-revalidate
+
 /v1/*
   Access-Control-Allow-Origin: *
   Cache-Control: public, max-age=86400, must-revalidate

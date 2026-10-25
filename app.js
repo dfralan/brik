@@ -1,6 +1,7 @@
 (function () {
   var h = Brik.h;
   var CDN = '<script defer src="https://brikjs.pages.dev/v1/brik.min.js"></script>';
+  var THEME_CDN = '<link rel="stylesheet" href="https://brikjs.pages.dev/v1/brik-theme.min.css">';
   var AGENT = [
     "Build this UI with Brik. Brik is a tiny client-side reactive runtime: https://brikjs.pages.dev",
     "",
@@ -13,9 +14,9 @@
     "Public API — five primitives:",
     "Brik.component(name, fn)  register a component. Name must match /^[a-z][a-z0-9-]*$/.",
     "Brik.mount(node?)         mount <brik> elements. Returns unmount().",
-    "Brik.h(tag, props, ...children)  create DOM. String children are text nodes. Function children are reactive text.",
-    "Brik.state(value)         reactive Proxy. Primitives are boxed as { value }.",
-    "Brik.effect(fn)           reruns when a value it read changes. May return a cleanup.",
+    "Brik.h(tag, props, ...children)  create DOM. String children are text nodes. Function children are reactive text. html/unsafeHTML is trusted markup.",
+    "Brik.state(value)         shallow Proxy. Replacing a property is reactive. Mutating a nested object in place is not.",
+    "Brik.effect(fn)           reruns when a value it read changes. May return a cleanup. Effects after await are not owned by the mount.",
     "",
     "Rules:",
     "- Nested <brik name></brik> elements mount recursively after the parent renders.",
@@ -73,6 +74,7 @@
       h("brik", { hero: true }),
       h("brik", { why: true }),
       h("brik", { examples: true }),
+      h("brik", { ecosystem: true }),
       h("brik", { docs: true }),
       h("brik", { foot: true })
     );
@@ -84,6 +86,8 @@
       h("div", { class: "nav-links" },
         h("a", { href: "#why" }, "Why"),
         h("a", { href: "#examples" }, "Examples"),
+        h("a", { href: "#ecosystem" }, "Ecosystem"),
+        h("a", { href: "/theme/" }, "Theme"),
         h("a", { href: "#use" }, "Use"),
         h("a", { href: "https://github.com/dfralan/brik" }, "GitHub"),
         h("brik", { theme: true })
@@ -185,65 +189,94 @@
       h("div", { class: "grid" },
         h("brik", { live: true }),
         h("brik", { nest: true }),
-        h("brik", { demo: true })
+        h("brik", { "demo-pomodoro": true }),
+        h("brik", { "demo-tasks": true })
       )
     );
   });
 
-  Brik.component("demo", function () {
-    var showCode = Brik.state(false);
-    var copied = Brik.state(false);
+  function widgetCard(opts) {
+    return function () {
+      var showCode = Brik.state(false);
+      var copied = Brik.state(false);
 
-    Brik.effect(function () {
-      return function () {
-        if (window.BrikPomodoro) window.BrikPomodoro.unmount();
-      };
-    });
-
-    var pre = h("pre", null, "");
-    var code = h("div", { class: "demo-code", hidden: "" },
-      h("button", {
-        class: "ghost",
-        type: "button",
-        onclick: function () {
-          if (window.BrikPomodoro) copyText(window.BrikPomodoro.source, copied);
-        }
-      }, function () {
-        return copied.value ? "Copied" : "Copy";
-      }),
-      pre
-    );
-
-    Brik.effect(function () {
-      code.hidden = !showCode.value;
-      if (showCode.value && window.BrikPomodoro) {
-        pre.textContent = window.BrikPomodoro.source;
+      function api() {
+        return window[opts.global];
       }
-    });
 
-    return h("article", { class: "card demo" },
-      h("h3", null, "Pomodoro"),
-      h("p", null, "A real widget. Open it, then close it with × — that unmounts the tree."),
-      h("div", { class: "demo-actions" },
-        h("button", {
-          type: "button",
-          "data-open-widget": "",
-          onclick: function () {
-            if (window.BrikPomodoro) window.BrikPomodoro.mount();
-          }
-        }, "Open widget"),
+      Brik.effect(function () {
+        return function () {
+          var widget = api();
+          if (widget) widget.unmount();
+        };
+      });
+
+      var pre = h("pre", null, "");
+      var code = h("div", { class: "demo-code", hidden: "" },
         h("button", {
           class: "ghost",
           type: "button",
-          "data-see-code": "",
-          onclick: function () { showCode.value = !showCode.value; }
+          onclick: function () {
+            var widget = api();
+            if (widget) copyText(widget.source, copied);
+          }
         }, function () {
-          return showCode.value ? "Hide code" : "See code";
-        })
-      ),
-      code
-    );
-  });
+          return copied.value ? "Copied" : "Copy";
+        }),
+        pre
+      );
+
+      Brik.effect(function () {
+        code.hidden = !showCode.value;
+        var widget = api();
+        if (showCode.value && widget) pre.textContent = widget.source;
+      });
+
+      var openAttrs = {
+        type: "button",
+        onclick: function () {
+          var widget = api();
+          if (widget) widget.mount();
+        }
+      };
+      openAttrs[opts.openAttr] = "";
+
+      var seeAttrs = {
+        class: "ghost",
+        type: "button",
+        onclick: function () { showCode.value = !showCode.value; }
+      };
+      seeAttrs[opts.seeAttr] = "";
+
+      return h("article", { class: "card demo" },
+        h("h3", null, opts.title),
+        h("p", null, opts.body),
+        h("div", { class: "demo-actions" },
+          h("button", openAttrs, "Open widget"),
+          h("button", seeAttrs, function () {
+            return showCode.value ? "Hide code" : "See code";
+          })
+        ),
+        code
+      );
+    };
+  }
+
+  Brik.component("demo-pomodoro", widgetCard({
+    global: "BrikPomodoro",
+    title: "🍅 Pomodoro",
+    body: "A real widget. Open it, then close it with × — that unmounts the tree.",
+    openAttr: "data-open-widget",
+    seeAttr: "data-see-code"
+  }));
+
+  Brik.component("demo-tasks", widgetCard({
+    global: "BrikTasks",
+    title: "Quick Tasks",
+    body: "A list that filters in place. Same overlay: mount, then × to unmount.",
+    openAttr: "data-open-tasks",
+    seeAttr: "data-see-tasks"
+  }));
 
   Brik.component("live", function () {
     var n = Brik.state(0);
@@ -297,6 +330,98 @@
     );
   });
 
+  Brik.component("ecosystem", function () {
+    var names = ["brik", "brik-theme", "brik-persist", "brik-nostr", "brik-blueprint", "brik-connect", "brik-agent"];
+
+    return h("section", { class: "section", id: "ecosystem" },
+      h("div", { class: "section-head" },
+        h("h2", null, "Ecosystem"),
+        h("p", null, "An editorial catalog. Official files may live on brikjs.pages.dev. A module does not have to.")
+      ),
+      h("div", { class: "grid" },
+        names.map(function (name) {
+          return h("brik", { "eco-mod": true, name: name });
+        })
+      ),
+      h("p", { class: "note" },
+        "Third-party JavaScript runs with the privileges of this page. Use SRI and crossorigin on official assets. Untrusted code belongs in a sandboxed iframe. ",
+        h("a", { href: "./docs/modules.md" }, "How to publish a module")
+      )
+    );
+  });
+
+  Brik.component("eco-mod", function (ctx) {
+    var modules = {
+      brik: {
+        body: "Components, reactivity, DOM, and lifecycle.",
+        status: "v1",
+        source: "https://github.com/dfralan/brik",
+        install: CDN
+      },
+      "brik-theme": {
+        body: "Bricks for buttons, fields, cards, and type.",
+        status: "In development",
+        source: "https://github.com/dfralan/brik/tree/main/theme",
+        docs: "/theme/components",
+        install: THEME_CDN
+      },
+      "brik-persist": {
+        body: "State persistence through browser storage.",
+        status: "Proposed"
+      },
+      "brik-nostr": {
+        body: "Optional decentralized identity and sync.",
+        status: "Proposed"
+      },
+      "brik-blueprint": {
+        body: "Declarative, persistent UI descriptions.",
+        status: "Proposed"
+      },
+      "brik-connect": {
+        body: "Adapters for external data sources.",
+        status: "Proposed"
+      },
+      "brik-agent": {
+        body: "Optional agent-driven UI orchestration.",
+        status: "Proposed"
+      }
+    };
+    var name = ctx.el.getAttribute("name");
+    var item = modules[name];
+    if (!item) return null;
+    var copied = Brik.state(false);
+    var kids = [
+      h("div", { class: "mod-top" },
+        h("div", null,
+          h("h3", null, name),
+          h("p", null, item.body)
+        ),
+        h("span", { class: "mod-status" }, item.status)
+      ),
+      item.source
+        ? h("a", { class: "mod-source", href: item.source }, "Source")
+        : null,
+      item.docs
+        ? h("a", { class: "mod-source", href: item.docs }, "Components")
+        : null
+    ];
+    if (item.install) {
+      kids.push(
+        h("div", { class: "command" },
+          h("code", null, item.install),
+          h("button", {
+            class: "copy",
+            type: "button",
+            onclick: function () { copyText(item.install, copied); }
+          }, function () {
+            return copied.value ? "Copied" : "Copy";
+          })
+        )
+      );
+    }
+    return h("article", { class: "card mod" }, kids);
+  });
+
   Brik.component("docs", function () {
     var agent = Brik.state(false);
     var sections = [
@@ -332,8 +457,18 @@
       },
       {
         title: "Untrusted data",
-        body: "HTML strings are trusted. Put foreign text through Brik.h so it becomes a text node. Never evaluate agent-supplied JavaScript.",
-        code: "Brik.h(\"p\", null, remoteText);"
+        body: "HTML strings returned by a component, and html / unsafeHTML on Brik.h, are trusted markup. Foreign text goes through Brik.h as a child so it becomes a text node. String on* properties are ignored. href and src are assigned as written.",
+        code: "Brik.h(\"p\", null, remoteText);\nBrik.h(\"div\", { unsafeHTML: trustedMarkup });"
+      },
+      {
+        title: "Shallow state",
+        body: "Replacing a tracked property notifies. Mutating a nested object or array in place does not. Effects created after await are not owned by the mount.",
+        code: "user.name = \"Ada\";\nuser.profile.age++;"
+      },
+      {
+        title: "Modules",
+        body: "A module is a file. It can live in any repository and ship from any CDN. Document name, source, compatible Core versions, URL, API, and permissions. Do not monkey-patch Brik.",
+        code: "<link rel=\"stylesheet\" href=\"https://example.com/v1/my-theme.css\">"
       }
     ];
 

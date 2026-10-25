@@ -268,26 +268,90 @@ test("source and minified runtime contain no eval", function () {
 test("official website mounts on Brik", async function () {
   await load("<!doctype html><html><body><brik app></brik></body></html>");
   window.eval(readFileSync(new URL("../site/examples/pomodoro.js", import.meta.url), "utf8"));
+  window.eval(readFileSync(new URL("../site/examples/tasks.js", import.meta.url), "utf8"));
   window.eval(readFileSync(new URL("../site/app.js", import.meta.url), "utf8"));
   Brik.mount();
   assert.match(document.querySelector("h1").textContent, /Just enough/);
   assert.match(document.body.textContent, /Brik.component/);
   assert.match(document.querySelector(".agent").textContent, /Copy for agents/);
+  assert.match(document.querySelector("#ecosystem").textContent, /brik-theme/);
+  assert.match(document.querySelector("#ecosystem").textContent, /Proposed/);
+  assert.match(document.body.textContent, /brik-theme.min.css/);
+  assert.equal(document.querySelector(".mod-source[href='/theme/components']").textContent, "Components");
   assert.match(document.querySelector("[data-open-widget]").textContent, /Open widget/);
   document.querySelector("[data-see-code]").click();
   await tick();
   assert.match(document.querySelector(".demo-code").textContent, /Brik.component\("pomodoro"/);
+  assert.match(document.querySelector(".demo-code").textContent, /🍅/);
   document.querySelector("[data-open-widget]").click();
   await tick();
   assert.ok(document.querySelector(".pomo-layer"));
   assert.match(document.querySelector(".pomo-time").textContent, /25:00/);
+  assert.match(document.querySelector(".pomo h1").textContent, /🍅 Pomodoro/);
   document.querySelector(".pomo-x").click();
   await tick();
   assert.equal(document.querySelector(".pomo-layer"), null);
+  document.querySelector("[data-see-tasks]").click();
+  await tick();
+  assert.match(document.body.textContent, /Brik.component\("tasks"/);
+  document.querySelector("[data-open-tasks]").click();
+  await tick();
+  assert.ok(document.querySelector(".tasks-layer"));
+  var input = document.querySelector(".tasks input");
+  input.value = "escribir";
+  input.dispatchEvent(new window.Event("input", { bubbles: true }));
+  document.querySelector(".tasks .brik-button.primary").click();
+  await tick();
+  assert.match(document.querySelector(".tasks-list").textContent, /escribir/);
+  document.querySelector(".tasks-x").click();
+  await tick();
+  assert.equal(document.querySelector(".tasks-layer"), null);
   assert.equal(document.querySelectorAll("[data-brik]").length > 5, true);
   document.querySelector(".live button").click();
   await tick();
   assert.equal(document.querySelector(".live strong").textContent, "1");
+});
+
+test("theme docs present the button bricks", async function () {
+  await load("<!doctype html><html data-brick='button'><body><brik theme-docs></brik></body></html>");
+  window.eval(readFileSync(new URL("../site/theme/docs.js", import.meta.url), "utf8"));
+  Brik.mount();
+  assert.match(document.body.textContent, /brik-button/);
+  assert.ok(document.querySelector(".brik-button.tint"));
+  assert.ok(document.querySelector(".brik-button.ghost"));
+});
+
+test("theme component catalog lists accordion", async function () {
+  await load("<!doctype html><html data-brick='components'><body><brik theme-docs></brik></body></html>");
+  window.eval(readFileSync(new URL("../site/theme/docs.js", import.meta.url), "utf8"));
+  Brik.mount();
+  assert.match(document.body.textContent, /Accordion/);
+  assert.match(document.body.textContent, /Dialog/);
+  assert.ok(document.querySelector("a[href='/theme/components/accordion']"));
+});
+
+test("theme accordion docs include overview and api", async function () {
+  await load("<!doctype html><html data-brick='accordion'><body><brik theme-docs></brik></body></html>");
+  window.eval(readFileSync(new URL("../site/theme/docs.js", import.meta.url), "utf8"));
+  Brik.mount();
+  assert.match(document.body.textContent, /Overview/);
+  assert.match(document.body.textContent, /Quick Start/);
+  assert.match(document.body.textContent, /API Reference/);
+  assert.ok(document.querySelector(".brik-accordion"));
+  assert.ok(document.querySelector("details.brik-item"));
+});
+
+test("theme home presents the library landing", async function () {
+  await load("<!doctype html><html data-brick='index'><body><brik theme-docs></brik></body></html>");
+  window.eval(readFileSync(new URL("../site/theme/docs.js", import.meta.url), "utf8"));
+  Brik.mount();
+  assert.match(document.body.textContent, /The bricks/);
+  assert.match(document.body.textContent, /Browse the catalog/);
+  assert.ok(document.querySelector(".hero"));
+  assert.ok(document.querySelector(".command"));
+  assert.ok(document.querySelector(".brand img"));
+  assert.ok(document.querySelector(".foot .made"));
+  assert.ok(document.querySelector(".docs-stage"));
 });
 
 test("official website runs on the minified file", async function () {
@@ -300,6 +364,150 @@ test("official website runs on the minified file", async function () {
   document.querySelector(".tree button").click();
   await tick();
   assert.match(document.body.textContent, /dynamic 1/);
+});
+
+test("nested effects restore the outer tracker", async function () {
+  await load();
+  var outer = Brik.state(0);
+  var inner = Brik.state(0);
+  var seen = [];
+  Brik.effect(function () {
+    Brik.effect(function () {
+      inner.value;
+    });
+    seen.push(outer.value);
+  });
+  assert.deepEqual(seen, [0]);
+  outer.value = 1;
+  await tick();
+  assert.deepEqual(seen, [0, 1]);
+});
+
+test("disposed effects do not run after unmount or while queued", async function () {
+  await load("<!doctype html><html><body><brik app></brik></body></html>");
+  var n = Brik.state(0);
+  var runs = 0;
+  Brik.component("app", function () {
+    Brik.effect(function () {
+      n.value;
+      runs++;
+    });
+    return "live";
+  });
+  for (var i = 0; i < 4; i++) {
+    document.body.innerHTML = "<brik app></brik>";
+    var stop = Brik.mount();
+    stop();
+  }
+  var after = runs;
+  n.value = 1;
+  await tick();
+  assert.equal(runs, after);
+
+  var queued = 0;
+  var halt = Brik.effect(function () {
+    n.value;
+    queued++;
+  });
+  n.value = 2;
+  halt();
+  await tick();
+  assert.equal(queued, 1);
+});
+
+test("a throwing effect does not drop the rest of the batch", async function () {
+  await load();
+  var errors = [];
+  var original = window.console.error;
+  window.console.error = function (err) { errors.push(err); };
+  var boom = Brik.state(0);
+  var other = Brik.state(0);
+  var good = 0;
+  Brik.effect(function () {
+    if (boom.value) throw new Error("boom");
+    boom.value;
+  });
+  Brik.effect(function () {
+    other.value;
+    if (other.value) good++;
+  });
+  boom.value = 1;
+  other.value = 1;
+  await tick();
+  window.console.error = original;
+  assert.equal(good, 1);
+  assert.equal(errors.length >= 1, true);
+});
+
+test("async components that resolve after unmount do not write", async function () {
+  await load("<!doctype html><html><body><brik app></brik></body></html>");
+  var resolve;
+  Brik.component("app", function () {
+    return new Promise(function (done) { resolve = done; });
+  });
+  var unmount = Brik.mount();
+  unmount();
+  resolve(Brik.h("p", { id: "late" }, "nope"));
+  await tick();
+  assert.equal(document.querySelector("#late"), null);
+});
+
+test("state is shallow and uses Object.is", async function () {
+  await load();
+  var user = Brik.state(window.eval("({ nested: { age: 1 } })"));
+  var seen = 0;
+  Brik.effect(function () {
+    user.nested;
+    seen++;
+  });
+  user.nested.age = 2;
+  await tick();
+  assert.equal(seen, 1);
+  user.nested = { age: 3 };
+  await tick();
+  assert.equal(seen, 2);
+
+  var n = Brik.state(NaN);
+  var nanSeen = 0;
+  Brik.effect(function () {
+    n.value;
+    nanSeen++;
+  });
+  n.value = NaN;
+  await tick();
+  assert.equal(nanSeen, 1);
+});
+
+test("h() refuses string event handlers and accepts unsafeHTML", async function () {
+  await load();
+  var el = Brik.h("a", { onclick: "alert(1)", href: "https://example.com" });
+  assert.equal(el.getAttribute("onclick"), null);
+  assert.equal(el.getAttribute("href"), "https://example.com");
+  var trusted = Brik.h("div", { html: "<em id='via-html'>ok</em>" });
+  assert.equal(trusted.querySelector("#via-html").textContent, "ok");
+  var also = Brik.h("div", { unsafeHTML: "<strong id='via-unsafe'>ok</strong>" });
+  assert.equal(also.querySelector("#via-unsafe").textContent, "ok");
+});
+
+test("last component registration wins and fragments mount once", async function () {
+  await load("<!doctype html><html><body><brik app></brik></body></html>");
+  var childRuns = 0;
+  Brik.component("app", function () { return "first"; });
+  Brik.component("app", function () {
+    var frag = document.createDocumentFragment();
+    frag.appendChild(Brik.h("p", { id: "frag" }, "second"));
+    frag.appendChild(Brik.h("brik", { child: true }));
+    return frag;
+  });
+  Brik.component("child", function () {
+    childRuns++;
+    return Brik.h("span", { id: "kid" }, "kid");
+  });
+  Brik.mount();
+  assert.equal(document.getElementById("frag").textContent, "second");
+  assert.equal(document.getElementById("kid").textContent, "kid");
+  assert.equal(childRuns, 1);
+  assert.equal(document.querySelectorAll("[data-brik='child']").length, 1);
 });
 
 test("h() binds events and keeps text children safe", async function () {

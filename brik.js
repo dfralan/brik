@@ -41,7 +41,13 @@
       }
       var batch = queue;
       queue = [];
-      for (var i = 0; i < batch.length; i++) batch[i]();
+      for (var i = 0; i < batch.length; i++) {
+        try {
+          batch[i]();
+        } catch (err) {
+          console.error(err);
+        }
+      }
     }
   }
 
@@ -71,7 +77,7 @@
         return obj[key];
       },
       set: function (obj, key, value) {
-        if (obj[key] !== value) {
+        if (!Object.is(obj[key], value)) {
           obj[key] = value;
           notify(key);
         }
@@ -99,11 +105,12 @@
         clean();
         clean = undefined;
       }
+      var prev = listener;
       listener = { run: run, subs: subs };
       try {
         clean = fn();
       } finally {
-        listener = null;
+        listener = prev;
       }
     }
 
@@ -158,10 +165,10 @@
         if (key === "class" || key === "className") el.className = value;
         else if (key === "style" && typeof value === "object") {
           for (var name in value) el.style[name] = value[name];
-        } else if (key === "html") el.innerHTML = String(value);
+        }         else if (key === "html" || key === "unsafeHTML") el.innerHTML = String(value);
         else if (key === "ref" && typeof value === "function") ref = value;
-        else if (key.length > 2 && key.charAt(0) === "o" && key.charAt(1) === "n" && typeof value === "function") {
-          el.addEventListener(key.slice(2).toLowerCase(), value);
+        else if (key.length > 2 && key.charAt(0) === "o" && key.charAt(1) === "n") {
+          if (typeof value === "function") el.addEventListener(key.slice(2).toLowerCase(), value);
         } else el.setAttribute(key, value === true ? "" : value);
       }
     }
@@ -202,7 +209,9 @@
     for (var j = 0; j < inst.fx.length; j++) {
       try {
         inst.fx[j]();
-      } catch (err) {}
+      } catch (err) {
+        console.error(err);
+      }
     }
     inst.fx = [];
     delete instances[inst.id];

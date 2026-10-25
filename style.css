@@ -1,18 +1,18 @@
 :root,
 html[data-theme="light"] {
-  --bg: #fcfefb;
-  --fg: #181a22;
-  --muted: #898d9a;
-  --field: #f6f7f8;
-  --line: #ececee;
+  --bg: var(--brik-bg, #fcfefb);
+  --fg: var(--brik-fg, #181a22);
+  --muted: var(--brik-muted, #898d9a);
+  --field: var(--brik-field, #f6f7f8);
+  --line: var(--brik-line, #ececee);
 }
 
 html[data-theme="dark"] {
-  --bg: #02040a;
-  --fg: #e7e5eb;
-  --muted: #767287;
-  --field: #0e1117;
-  --line: #1b1d24;
+  --bg: var(--brik-bg, #02040a);
+  --fg: var(--brik-fg, #e7e5eb);
+  --muted: var(--brik-muted, #767287);
+  --field: var(--brik-field, #0e1117);
+  --line: var(--brik-line, #1b1d24);
 }
 
 * {
@@ -58,6 +58,7 @@ button {
   max-width: 52rem;
   margin: 0 auto;
   padding: 0 1.25rem 4rem;
+  overflow-x: clip;
 }
 
 .nav {
@@ -257,11 +258,20 @@ button {
 .grid {
   display: grid;
   gap: 1rem;
+  min-width: 0;
+}
+
+.grid > * {
+  min-width: 0;
 }
 
 @media (min-width: 760px) {
   .grid {
     grid-template-columns: 1fr 1fr;
+  }
+
+  #examples .grid {
+    align-items: start;
   }
 }
 
@@ -277,7 +287,6 @@ button {
 }
 
 .demo {
-  grid-column: 1 / -1;
   min-height: 0;
 }
 
@@ -376,6 +385,72 @@ button {
   overflow-x: auto;
   white-space: pre-wrap;
   font: 0.8rem/1.5 ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+}
+
+.mod {
+  min-height: 0;
+}
+
+.mod-top {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 1rem;
+}
+
+.mod-status {
+  flex: none;
+  color: var(--muted);
+  font-size: 0.75rem;
+}
+
+.mod-source {
+  display: inline-block;
+  margin-top: 0.65rem;
+  margin-right: 0.75rem;
+  color: var(--muted);
+  font-size: 0.85rem;
+}
+
+.mod .command {
+  width: 100%;
+  max-width: 100%;
+  min-width: 0;
+  margin-top: 1rem;
+}
+
+.mod .command code {
+  min-width: 0;
+  font-size: 0.75rem;
+  white-space: pre-wrap;
+  overflow-wrap: anywhere;
+}
+
+.mod .copy {
+  margin-top: 0;
+  background: transparent;
+  color: var(--fg);
+}
+
+.theme-demo {
+  min-height: 0;
+}
+
+.theme-demo .row {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+  margin: 1rem 0;
+}
+
+.theme-demo table {
+  margin-top: 0.5rem;
+}
+
+.note {
+  margin-top: 1.25rem;
+  color: var(--muted);
+  font-size: 0.88rem;
 }
 
 .foot {

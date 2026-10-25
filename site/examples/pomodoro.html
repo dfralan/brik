@@ -1,44 +1,18 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="en" data-theme="dark">
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <title>Brik · Pomodoro</title>
   <link rel="icon" href="../brik.svg" type="image/svg+xml">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:wght@400;600&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="../brik-theme.min.css">
   <link rel="stylesheet" href="./pomodoro.css">
-  <style>
-    :root {
-      --bg: #02040a;
-      --fg: #e7e5eb;
-      --muted: #767287;
-      --field: #0e1117;
-      --line: #1b1d24;
-    }
-    html, body {
-      margin: 0;
-      min-height: 100vh;
-      background: var(--bg);
-      color: var(--fg);
-      font: 16px/1.5 "IBM Plex Sans", Helvetica, Arial, sans-serif;
-    }
-    #pomo-open {
-      position: fixed;
-      left: 50%;
-      top: 50%;
-      transform: translate(-50%, -50%);
-      font: inherit;
-      color: var(--bg);
-      cursor: pointer;
-      padding: 0.7rem 1rem;
-      border: 0;
-      border-radius: 0.5rem;
-      background: var(--fg);
-      font-weight: 600;
-    }
-  </style>
 </head>
 <body>
-  <button id="pomo-open" type="button">Open widget</button>
+  <button id="pomo-open" class="brik-button primary pomo-launch" type="button">Open widget</button>
   <script src="../v1/brik.min.js"></script>
   <script src="./pomodoro.js"></script>
 </body>

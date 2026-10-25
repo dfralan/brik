@@ -6,7 +6,7 @@
   "license": "MIT",
   "scripts": {
     "build": "node scripts/build.js",
-    "test": "node --test test/brik.test.js"
+    "test": "node --test test/*.test.js"
   },
   "devDependencies": {
     "happy-dom": "^20.0.2",
