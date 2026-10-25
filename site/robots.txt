@@ -1,0 +1,3 @@
+# Agents: https://brikjs.pages.dev/llms.txt
+User-agent: *
+Allow: /

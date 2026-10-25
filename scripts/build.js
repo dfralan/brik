@@ -96,6 +96,8 @@ async function emit(dir) {
   }
   await mkdir(prefix + "docs", { recursive: true });
   await copyFile("docs/modules.md", prefix + "docs/modules.md");
+  await copyFile("site/robots.txt", prefix + "robots.txt");
+  await copyFile("site/llms.txt", prefix + "llms.txt");
 }
 
 await emit("dist");

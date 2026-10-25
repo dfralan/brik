@@ -26,6 +26,7 @@
     "- Do not add a router, JSX, a bundler, or another framework unless the user asks.",
     "- Keep the implementation small.",
     "",
+    "Read https://brikjs.pages.dev/llms.txt before inventing a setup.",
     "Build what the user asked for using only Brik."
   ].join("\n");
 
@@ -69,7 +70,7 @@
   applyTheme(preferredTheme());
 
   Brik.component("app", function () {
-    return h("div", { class: "page" },
+    return h("div", { class: "page brik-page" },
       h("brik", { nav: true }),
       h("brik", { hero: true }),
       h("brik", { why: true }),
@@ -100,7 +101,7 @@
     var sun = '<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7"><circle cx="12" cy="12" r="4"/><path d="M12 3v2M12 19v2M5 12H3M21 12h-2M6.2 6.2l1.4 1.4M16.4 16.4l1.4 1.4M6.2 17.8l1.4-1.4M16.4 7.6l1.4-1.4"/></svg>';
     var moon = '<svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor"><path d="M15.2 3.1a8.8 8.8 0 1 0 5.7 15.6A8.2 8.2 0 0 1 15.2 3.1z"/></svg>';
     return h("button", {
-      class: "theme",
+      class: "brik-button ghost theme",
       type: "button",
       "aria-label": "Toggle theme",
       ref: function (el) {
@@ -125,14 +126,14 @@
       h("div", { class: "command" },
         h("code", null, CDN),
         h("button", {
-          class: "copy",
+          class: "brik-button ghost copy",
           type: "button",
           onclick: function () { copyText(CDN, copied); }
         }, function () {
           return copied.value ? "Copied" : "Copy";
         })
       ),
-      h("p", { class: "hint" }, "1.8 KB gzip. Zero dependencies. No npm.")
+      h("p", { class: "brik-caption hint" }, "1.8 KB gzip. Zero dependencies. No npm.")
     );
   });
 
@@ -166,13 +167,13 @@
 
     return h("section", { class: "section", id: "why" },
       h("div", { class: "section-head" },
-        h("h2", null, "Why Brik exists"),
+        h("h2", { class: "brik-title" }, "Why Brik exists"),
         h("p", null, "Not a platform. A way to let a UI appear without asking a server first.")
       ),
       h("div", { class: "grid why-grid" },
         points.map(function (item) {
-          return h("article", { class: "card" },
-            h("h3", null, item.title),
+          return h("article", { class: "brik-card" },
+            h("h3", { class: "brik-title" }, item.title),
             h("p", null, item.body)
           );
         })
@@ -183,7 +184,7 @@
   Brik.component("examples", function () {
     return h("section", { class: "section", id: "examples" },
       h("div", { class: "section-head" },
-        h("h2", null, "See it running"),
+        h("h2", { class: "brik-title" }, "See it running"),
         h("p", null, "These are live Brik components, not mocks.")
       ),
       h("div", { class: "grid" },
@@ -214,7 +215,7 @@
       var pre = h("pre", null, "");
       var code = h("div", { class: "demo-code", hidden: "" },
         h("button", {
-          class: "ghost",
+          class: "brik-button ghost",
           type: "button",
           onclick: function () {
             var widget = api();
@@ -233,6 +234,7 @@
       });
 
       var openAttrs = {
+        class: "brik-button primary",
         type: "button",
         onclick: function () {
           var widget = api();
@@ -242,14 +244,14 @@
       openAttrs[opts.openAttr] = "";
 
       var seeAttrs = {
-        class: "ghost",
+        class: "brik-button secondary",
         type: "button",
         onclick: function () { showCode.value = !showCode.value; }
       };
       seeAttrs[opts.seeAttr] = "";
 
-      return h("article", { class: "card demo" },
-        h("h3", null, opts.title),
+      return h("article", { class: "brik-card demo" },
+        h("h3", { class: "brik-title" }, opts.title),
         h("p", null, opts.body),
         h("div", { class: "demo-actions" },
           h("button", openAttrs, "Open widget"),
@@ -280,12 +282,13 @@
 
   Brik.component("live", function () {
     var n = Brik.state(0);
-    return h("article", { class: "card" },
-      h("h3", null, "State"),
+    return h("article", { class: "brik-card" },
+      h("h3", { class: "brik-title" }, "State"),
       h("p", null, "A counter that updates one text node."),
       h("div", { class: "live" },
         h("strong", null, function () { return n.value; }),
         h("button", {
+          class: "brik-button primary",
           type: "button",
           onclick: function () { n.value++; }
         }, "Add one")
@@ -295,13 +298,14 @@
 
   Brik.component("nest", function (ctx) {
     var extra = Brik.state(0);
-    return h("article", { class: "card" },
-      h("h3", null, "Nested"),
+    return h("article", { class: "brik-card" },
+      h("h3", { class: "brik-title" }, "Nested"),
       h("p", null, "Components that mount other components."),
       h("div", { class: "tree" },
-        h("div", { class: "row" }, h("span", { class: "mark" }, "app"), "this page"),
+        h("div", { class: "brik-row row" }, h("span", { class: "mark" }, "app"), "this page"),
         h("brik", { branch: true }),
         h("button", {
+          class: "brik-button primary",
           type: "button",
           onclick: function () {
             extra.value++;
@@ -318,13 +322,13 @@
 
   Brik.component("branch", function () {
     return h("div", null,
-      h("div", { class: "row" }, h("span", { class: "mark" }, "branch"), "mounted by nest"),
+      h("div", { class: "brik-row row" }, h("span", { class: "mark" }, "branch"), "mounted by nest"),
       h("brik", { leaf: true, label: "mounted by branch" })
     );
   });
 
   Brik.component("leaf", function (ctx) {
-    return h("div", { class: "row" },
+    return h("div", { class: "brik-row row" },
       h("span", { class: "mark" }, "leaf"),
       ctx.el.getAttribute("label") || "leaf"
     );
@@ -335,7 +339,7 @@
 
     return h("section", { class: "section", id: "ecosystem" },
       h("div", { class: "section-head" },
-        h("h2", null, "Ecosystem"),
+        h("h2", { class: "brik-title" }, "Ecosystem"),
         h("p", null, "An editorial catalog. Official files may live on brikjs.pages.dev. A module does not have to.")
       ),
       h("div", { class: "grid" },
@@ -343,7 +347,7 @@
           return h("brik", { "eco-mod": true, name: name });
         })
       ),
-      h("p", { class: "note" },
+      h("p", { class: "brik-caption note" },
         "Third-party JavaScript runs with the privileges of this page. Use SRI and crossorigin on official assets. Untrusted code belongs in a sandboxed iframe. ",
         h("a", { href: "./docs/modules.md" }, "How to publish a module")
       )
@@ -393,10 +397,12 @@
     var kids = [
       h("div", { class: "mod-top" },
         h("div", null,
-          h("h3", null, name),
+          h("h3", { class: "brik-title" }, name),
           h("p", null, item.body)
         ),
-        h("span", { class: "mod-status" }, item.status)
+        h("span", {
+          class: item.status === "v1" ? "brik-badge primary" : "brik-badge"
+        }, item.status)
       ),
       item.source
         ? h("a", { class: "mod-source", href: item.source }, "Source")
@@ -410,7 +416,7 @@
         h("div", { class: "command" },
           h("code", null, item.install),
           h("button", {
-            class: "copy",
+            class: "brik-button ghost copy",
             type: "button",
             onclick: function () { copyText(item.install, copied); }
           }, function () {
@@ -419,7 +425,7 @@
         )
       );
     }
-    return h("article", { class: "card mod" }, kids);
+    return h("article", { class: "brik-card mod" }, kids);
   });
 
   Brik.component("docs", function () {
@@ -474,16 +480,16 @@
 
     return h("section", { class: "section", id: "use" },
       h("div", { class: "section-head" },
-        h("h2", null, "Use"),
+        h("h2", { class: "brik-title" }, "Use"),
         h("p", null, "Five primitives. The rest is the browser.")
       ),
-      h("div", { class: "agent-box" },
+      h("div", { class: "agent-box brik-card" },
         h("div", null,
-          h("h3", null, "For agents"),
+          h("h3", { class: "brik-title" }, "For agents"),
           h("p", null, "Copy a brief that tells an agent how to install Brik, register components, and mount a UI.")
         ),
         h("button", {
-          class: "agent",
+          class: "brik-button primary agent",
           type: "button",
           onclick: function () { copyText(AGENT, agent); }
         }, function () {
@@ -493,7 +499,7 @@
       sections.map(function (item) {
         return h("article", { class: "doc" },
           h("div", null,
-            h("h3", null, item.title),
+            h("h3", { class: "brik-title" }, item.title),
             h("p", null, item.body)
           ),
           h("pre", null, item.code)

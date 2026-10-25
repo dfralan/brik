@@ -8,13 +8,13 @@ A tiny reactive runtime for interfaces that build themselves.
 
 One JavaScript file. One CDN. One root component. No npm, no compiler, no virtual DOM.
 
-The latest build is 1880 B gzip for the runtime and 2839 B gzip for the theme. `npm run build` prints the current sizes. Theme CSS is a separate, optional file.
+The latest build is 1880 B gzip for the runtime and 2851 B gzip for the theme. `npm run build` prints the current sizes. Theme CSS is a separate, optional file.
 
 ## Overview
 
 Brik discovers `<brik>` elements and mounts registered components. Those components can create more `<brik>` elements, recursively.
 
-It is a client-side framework. Agents, CLIs, and connectors can drive it through the same public API. Brik itself only renders and reacts.
+It is a client-side framework. Agents, CLIs, and connectors can drive it through the same public API. Brik itself only renders and reacts. Agents should start at [llms.txt](https://brikjs.pages.dev/llms.txt).
 
 `brik-theme` is optional. Core works without it.
 
@@ -45,7 +45,7 @@ Subresource Integrity for this build:
 <link
   rel="stylesheet"
   href="https://brikjs.pages.dev/v1/brik-theme.min.css"
-  integrity="sha384-WBs4VF+CoAPNMVHbJyR+uPLMqymcTMN0b2AO/SC3lxnQuArKn2eid3n1bHgayg+v"
+  integrity="sha384-udKfbxA6/SItxNuvRsnD7WD0LaMyZwhtUbR6UyaEMDPYDc7GIMvL51hnVDrrWlyo"
   crossorigin="anonymous">
 ```
 

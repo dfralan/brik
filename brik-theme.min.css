@@ -57,6 +57,10 @@ brik {
   display: contents;
 }
 
+[hidden] {
+  display: none !important;
+}
+
 a {
   color: inherit;
 }

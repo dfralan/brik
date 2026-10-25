@@ -274,15 +274,26 @@ test("official website mounts on Brik", async function () {
   assert.match(document.querySelector("h1").textContent, /Just enough/);
   assert.match(document.body.textContent, /Brik.component/);
   assert.match(document.querySelector(".agent").textContent, /Copy for agents/);
+  assert.ok(document.querySelector(".agent.brik-button.primary"));
+  assert.ok(document.querySelector("#why .brik-card"));
+  assert.ok(document.querySelector("#examples .brik-button.primary"));
+  assert.ok(document.querySelector("#examples .brik-button.secondary"));
   assert.match(document.querySelector("#ecosystem").textContent, /brik-theme/);
   assert.match(document.querySelector("#ecosystem").textContent, /Proposed/);
   assert.match(document.body.textContent, /brik-theme.min.css/);
   assert.equal(document.querySelector(".mod-source[href='/theme/components']").textContent, "Components");
   assert.match(document.querySelector("[data-open-widget]").textContent, /Open widget/);
+  assert.equal(document.querySelector(".demo-code").hidden, true);
   document.querySelector("[data-see-code]").click();
   await tick();
+  assert.equal(document.querySelector(".demo-code").hidden, false);
+  assert.match(document.querySelector("[data-see-code]").textContent, /Hide code/);
   assert.match(document.querySelector(".demo-code").textContent, /Brik.component\("pomodoro"/);
   assert.match(document.querySelector(".demo-code").textContent, /🍅/);
+  document.querySelector("[data-see-code]").click();
+  await tick();
+  assert.equal(document.querySelector(".demo-code").hidden, true);
+  assert.match(document.querySelector("[data-see-code]").textContent, /See code/);
   document.querySelector("[data-open-widget]").click();
   await tick();
   assert.ok(document.querySelector(".pomo-layer"));
@@ -339,6 +350,11 @@ test("theme accordion docs include overview and api", async function () {
   assert.match(document.body.textContent, /API Reference/);
   assert.ok(document.querySelector(".brik-accordion"));
   assert.ok(document.querySelector("details.brik-item"));
+  var tabs = [...document.querySelector("[role=tablist]").children];
+  assert.ok(tabs.length > 0);
+  tabs.forEach(function (el) {
+    assert.equal(el.getAttribute("role"), "tab");
+  });
 });
 
 test("theme home presents the library landing", async function () {

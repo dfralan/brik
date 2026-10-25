@@ -159,25 +159,15 @@
 
 .docs-play-bar {
   display: flex;
-  align-items: stretch;
+  align-items: center;
+  gap: 0.35rem;
+  padding: 0.55rem 0.7rem 0 0.85rem;
   border-bottom: 1px solid var(--line);
 }
 
-.docs-play-bar button {
-  border: 0;
-  background: transparent;
-  color: var(--muted);
-  padding: 0.95rem 1.1rem;
-  font-weight: 600;
-}
-
-.docs-play-bar button:focus-visible {
-  outline-offset: -3px;
-}
-
-.docs-play-bar button.active,
-.docs-play-bar button:hover {
-  color: var(--fg);
+.docs-play-tabs {
+  display: flex;
+  align-items: center;
 }
 
 .docs-play-bar .copy {

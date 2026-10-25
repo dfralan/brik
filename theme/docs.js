@@ -73,7 +73,7 @@
   function copyBtn(text) {
     var flag = Brik.state(false);
     return h("button", {
-      class: "copy",
+      class: "brik-button ghost copy",
       type: "button",
       "aria-label": "Copy code",
       onclick: function () { copy(text, flag); }
@@ -85,7 +85,7 @@
     var sun = '<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7"><circle cx="12" cy="12" r="4"/><path d="M12 3v2M12 19v2M5 12H3M21 12h-2M6.2 6.2l1.4 1.4M16.4 16.4l1.4 1.4M6.2 17.8l1.4-1.4M16.4 7.6l1.4-1.4"/></svg>';
     var moon = '<svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor"><path d="M15.2 3.1a8.8 8.8 0 1 0 5.7 15.6A8.2 8.2 0 0 1 15.2 3.1z"/></svg>';
     return h("button", {
-      class: "theme",
+      class: "brik-button ghost theme",
       type: "button",
       "aria-label": "Toggle theme",
       ref: function (el) {
@@ -164,7 +164,7 @@
   function section(id, title) {
     var kids = Array.prototype.slice.call(arguments, 2);
     return h("section", { class: "docs-section", id: id },
-      h("h2", null, title),
+      h("h2", { class: "brik-title" }, title),
       kids
     );
   }
@@ -187,28 +187,34 @@
     var preview = h("div", { class: "docs-demo" }, demoFn());
     var codeEl = h("pre", { class: "docs-code" }, code);
     var previewBtn = h("button", {
+      class: "brik-tab active",
       type: "button",
       role: "tab",
+      "aria-selected": "true",
       onclick: function () { tab.value = "preview"; }
     }, "Preview");
     var codeBtn = h("button", {
+      class: "brik-tab",
       type: "button",
       role: "tab",
+      "aria-selected": "false",
       onclick: function () { tab.value = "code"; }
     }, "Code");
     Brik.effect(function () {
       var isPreview = tab.value === "preview";
-      previewBtn.className = isPreview ? "active" : "";
-      codeBtn.className = isPreview ? "" : "active";
+      previewBtn.className = isPreview ? "brik-tab active" : "brik-tab";
+      codeBtn.className = isPreview ? "brik-tab" : "brik-tab active";
       previewBtn.setAttribute("aria-selected", isPreview ? "true" : "false");
       codeBtn.setAttribute("aria-selected", isPreview ? "false" : "true");
       preview.hidden = !isPreview;
       codeEl.hidden = isPreview;
     });
     return h("div", { class: "docs-play" },
-      h("div", { class: "docs-play-bar", role: "tablist", "aria-label": "Example" },
-        previewBtn,
-        codeBtn,
+      h("div", { class: "docs-play-bar" },
+        h("div", { class: "docs-play-tabs", role: "tablist", "aria-label": "Example" },
+          previewBtn,
+          codeBtn
+        ),
         copyBtn(code)
       ),
       preview,
@@ -856,22 +862,22 @@
         h("div", { class: "command" },
           h("code", null, INSTALL),
           h("button", {
-            class: "copy",
+            class: "brik-button ghost copy",
             type: "button",
             onclick: function () { copy(INSTALL, copied); }
           }, function () { return copied.value ? "Copied" : "Copy"; })
         ),
-        h("p", { class: "hint" }, "One stylesheet. Light and dark. No JavaScript required.")
+        h("p", { class: "brik-caption hint" }, "One stylesheet. Light and dark. No JavaScript required.")
       ),
       h("section", { class: "section" },
         h("div", { class: "section-head" },
-          h("h2", null, "Why a theme"),
+          h("h2", { class: "brik-title" }, "Why a theme"),
           h("p", null, "Not a new language. The HTML you already write, with roles.")
         ),
         h("div", { class: "grid" },
           points.map(function (item) {
-            return h("article", { class: "card" },
-              h("h3", null, item.title),
+            return h("article", { class: "brik-card" },
+              h("h3", { class: "brik-title" }, item.title),
               h("p", null, item.body)
             );
           })
@@ -879,7 +885,7 @@
       ),
       h("section", { class: "section" },
         h("div", { class: "section-head" },
-          h("h2", null, "See it running"),
+          h("h2", { class: "brik-title" }, "See it running"),
           h("p", null, "These are the bricks, not mocks.")
         ),
         h("div", { class: "docs-stage" },
@@ -907,7 +913,7 @@
       ),
       h("section", { class: "section" },
         h("div", { class: "section-head" },
-          h("h2", null, "Components"),
+          h("h2", { class: "brik-title" }, "Components"),
           h("p", null,
             "Twenty bricks. ",
             h("a", { href: "/theme/components" }, "Browse the catalog")
@@ -933,8 +939,8 @@
 
   function card(item, preview) {
     var demo = item.id === "button" ? roles("brik-stack docs-roles") : preview();
-    return h("article", { class: "docs-card" },
-      h("h3", null, item.title),
+    return h("article", { class: "docs-card brik-card" },
+      h("h3", { class: "brik-title" }, item.title),
       h("p", null, item.body),
       h("div", { class: "docs-mini" }, demo),
       h("a", {

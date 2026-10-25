@@ -18,6 +18,7 @@ test("theme source defines tokens, schemes, focus and motion", function () {
   assert.match(source, /-webkit-text-fill-color/);
   assert.match(source, /html\[data-theme="light"\]/);
   assert.match(source, /html\[data-theme="dark"\]/);
+  assert.match(source, /\[hidden\]/);
   assert.match(source, /:focus-visible/);
   assert.match(source, /prefers-reduced-motion/);
   assert.match(source, /\.brik-button/);

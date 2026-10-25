@@ -1,0 +1,42 @@
+# Brik
+
+> A tiny reactive runtime for interfaces that build themselves. One JavaScript file. No npm, no compiler, no virtual DOM.
+
+Brik is for an agent that has to put a UI in the browser. It is not React, Vue, Next, or Astro. Do not add a router, a bundler, or another framework unless the user asks.
+
+## Install
+
+Runtime: https://brikjs.pages.dev/v1/brik.min.js
+
+Theme, optional: https://brikjs.pages.dev/v1/brik-theme.min.css
+
+Checksums: https://brikjs.pages.dev/v1/integrity.json
+
+```html
+<body>
+  <brik app></brik>
+  <script defer src="https://brikjs.pages.dev/v1/brik.min.js"></script>
+</body>
+```
+
+## API
+
+- `Brik.component(name, fn)` registers a component. The name matches `/^[a-z][a-z0-9-]*$/`.
+- `Brik.mount(node?)` mounts `<brik>` elements and returns `unmount()`.
+- `Brik.h(tag, props, ...children)` creates DOM. String children are text. Function children are reactive text. `html` and `unsafeHTML` are trusted markup.
+- `Brik.state(value)` is a shallow Proxy. Replacing a property is reactive. Mutating a nested object in place is not.
+- `Brik.effect(fn)` reruns when a value it read changes. It may return a cleanup. Effects created after `await` are not owned by the mount.
+
+Nested `<brik name>` elements mount after the parent renders. HTML strings returned by a component are trusted. Untrusted text goes through `Brik.h()` as a child. Never evaluate JavaScript supplied by an agent or a network.
+
+## Theme
+
+`brik-theme` is a stylesheet of bricks on native elements. Set `data-theme="light"` or `data-theme="dark"` on `<html>`. Button roles are `primary`, `secondary`, `tint`, and `ghost`. The CSS works without the runtime.
+
+## Read next
+
+- https://brikjs.pages.dev/
+- https://brikjs.pages.dev/theme/
+- https://brikjs.pages.dev/theme/components
+- https://brikjs.pages.dev/docs/modules.md
+- https://github.com/dfralan/brik
